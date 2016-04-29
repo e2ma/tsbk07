@@ -127,6 +127,7 @@ float calcHeight(float x, float z, Model *tex, int tex_width) {
 float randval(float min, float max)
 {
 	return (float)rand() / (float)RAND_MAX * (max - min) + min;
+	//return (float)rand() / (float)RAND_MAX * (2*max - min) + min;
 }
 
 
@@ -138,6 +139,13 @@ GLfloat* DiamondSquare(TextureData *tex) {
 	int x, z;
 
 	GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
+	GLfloat *heightArray = malloc(sizeof(GLfloat) * vertexCount);
+
+	for (x = 0; x < tex->width; x++) {
+		for (z = 0; z < tex->height; z++){
+			heightArray[(x + z * tex->width)] = 0;
+		}
+	}
 
 	printf("bpp %d\n", tex->bpp); //bits per pixel -> bpp/8 = bytes per pixel
 	for (x = 0; x < tex->width; x++)
@@ -147,9 +155,12 @@ GLfloat* DiamondSquare(TextureData *tex) {
 			// Vertex array. You need to scale this properly
 			vertexArray[(x + z * tex->width) * 3 + 0] = x / 1.0;
 			vertexArray[(x + z * tex->width) * 3 + 2] = z / 1.0;
-			vertexArray[(x + z * tex->width) * 3 + 1] = 0; // tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] / 10.0;
+		//	vertexArray[(x + z * tex->width) * 3 + 1] = 0; // tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] / 10.0;
+			vertexArray[(x + z * tex->width) * 3 + 1] = heightArray[(x + z * tex->width)];
 			}
 	}
+
+	// Diamond Square algorithm
 
 	//While the length of the side of the squares
 	//	is greater than zero{
@@ -160,9 +171,7 @@ GLfloat* DiamondSquare(TextureData *tex) {
 	//	Reduce the random number range.
 	//}
 
-	// diamond square algorithm
-
-	// X ->
+	// X to the right->
 	// Z down
 	//  A   .   G   .   B
 
@@ -173,99 +182,117 @@ GLfloat* DiamondSquare(TextureData *tex) {
 	//	.   .   .   .   .
 
 	//	C   .   I   .   D
+
 	int squares_per_side = 1;
 	int size = tex->height; //square size (length of one side)
 	int total_size = tex->height; // terrain size (length of one side)
-	GLfloat a, b, c, d, e, f, g, h, i, rand;// (x, y = [0 - 256]: 257 vertices)
-	rand = 100.0;
+	GLfloat/* a, b, c, d, e, f, g,*/ fval,gval,rand;// (x, y = [0 - 256]: 257 vertices)
+	int a, b, c, d, e, f, g, hmax, imax;
+	rand = 60.0;
 	int num = 0; // nb of iterations
+	int pos = 0;
 								  						  
     // height of corners
-	/*a = 83;
-	b = 57;
-	c = 84;
-	d = 65;*/
-	vertexArray[(1 + 1 * total_size) * 3 + 1] = 10;
-	vertexArray[(256 + 0 * total_size) * 3 + 1] = 10;
-	vertexArray[(0 + 256 * total_size) * 3 + 1] = 10;
-	vertexArray[(256 + 256 * total_size) * 3 + 1] = 10;
-	int apos, bpos, cpos, dpos;
-	apos = 0;
+	heightArray[(0 + 0 * total_size)] = 0; // A
+	heightArray[(256 + 0 * total_size)] = 0; // B
+	heightArray[(0 + 256 * total_size)] = 0; // C
+	heightArray[(256 + 256 * total_size) ] = 0; // D
 
 	while (size > 0) {
 		int x, z;
-		//squares_per_side = total_size / size;
 
+		// diamond step
 		for (x = 0; x < squares_per_side; x++) {
 			for (z = 0; z < squares_per_side; z++) {
-				//if (num < 10) {
-
-					a = vertexArray[(x * (size - 1) + z * (size - 1) * total_size) * 3 + 1];
-					b = vertexArray[(((x + 1) * (size - 1)) + z*(size - 1) * total_size) * 3 + 1];
-					c = vertexArray[(x * (size - 1) + ((z + 1) * (size - 1)) * total_size) * 3 + 1];
-					d = vertexArray[(((x + 1) * (size - 1)) + ((z + 1) * (size - 1)) * total_size) * 3 + 1];
-
-					// diamond step
-					e = (a + b + c + d) / 4 + randval(-rand, rand);
-					vertexArray[((x*(size - 1) + (size - 1) / 2) + (z*(size - 1) + (size - 1) / 2) * total_size) * 3 + 1] = e;
-				//}
+		//		if (num < 2) {
+					a = (x * (size - 1) + z * (size - 1) * total_size);
+					b = a + (size - 1);											
+					c = a + (size - 1) * total_size;													
+					d = a + (size - 1) + (size - 1) * total_size;										
+					e = a + (size - 1) / 2 + ((size - 1) / 2) * total_size;									
+				
+					float randvalue = randval(-rand, rand);
+				//	if (num == 0) { randvalue = abs(randvalue); } // uncomment to make the first e-value positive 
+					heightArray[e] = (heightArray[a] + heightArray[b] + heightArray[c] + heightArray[d]) / 4 + randvalue;// randval(-rand, rand);
+			
+		//		}
 			}
 		}
+
+		// square step 
+		rand = rand / sqrt(2);
 		for (x = 0; x < squares_per_side; x++) {
 			for (z = 0; z < squares_per_side; z++) {
-			//(//	if (num < 10) {
-					// square step 
+			//if (num < 10) {
 
-					a = vertexArray[(x * (size - 1) + z * (size - 1) * total_size) * 3 + 1];
-					b = vertexArray[(((x + 1) * (size - 1)) + z*(size - 1) * total_size) * 3 + 1];
-					c = vertexArray[(x * (size - 1) + ((z + 1) * (size - 1)) * total_size) * 3 + 1];
-					d = vertexArray[(((x + 1) * (size - 1)) + ((z + 1) * (size - 1)) * total_size) * 3 + 1];
-					e = vertexArray[((x*(size - 1) + (size - 1) / 2) + (z*(size - 1) + (size - 1) / 2) * total_size) * 3 + 1];
+				a = (x * (size - 1) + z * (size - 1) * total_size);
+				b = a + (size - 1);
+				c = a + (size - 1) * total_size;
+				d = a + (size - 1) + (size - 1) * total_size;
+				e = a + (size - 1) / 2 + ((size - 1) / 2) * total_size;
+
+				f = a + ((size - 1) / 2)  * total_size;
+				g = a + (size - 1) / 2;
 
 
-			//		printf("iteration %d: place e: %d, a: %d, b: %d, c: %d, d: %d, f: %d, g: %d\n", num, place, place_a, place_b, place_c, place_d, place_f, place_g);
 
-
-					int pos = 0;
 					if (x > 0) { 
-						pos = ((x * (size - 1) - (size - 1) / 2) + (z * (size - 1) + (size - 1) / 2)* total_size) * 3 + 1;
-						f = (a + e + c + vertexArray[pos]) / 4 + randval(-rand, rand);
+						pos = e - (size - 1);
+						fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
 					}
 					else {
-						pos = (((total_size - 1) - (size - 1) / 2) + (z * (size - 1) + (size - 1) / 2) * total_size) * 3 + 1;
-						f = (a + e + c + vertexArray[pos]) / 4 + randval(-rand, rand);
-						vertexArray[((total_size - 1) + (z*(size-1) + (size - 1)/2) * total_size) * 3 + 1] = f;
+						// edges != 0
+						pos = (((total_size - 1) - (size - 1) / 2) + (z * (size - 1) + (size - 1) / 2) * total_size);
+						fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
+					
+						// edges = 0
+						//fval = 0;
 
+						hmax = ((total_size - 1) + (z*(size - 1) + (size - 1) / 2) * total_size);
+						heightArray[hmax] = fval;
 					}
 				
-
 					if (z > 0) {
-						pos = (x*(size - 1) + (size - 1) / 2 + (z*(size - 1) - (size - 1) / 2) * total_size) * 3 + 1;
-						g = (a + e + b + vertexArray[pos]) / 4 + randval(-rand, rand);
+						pos = e - (size - 1) * total_size;
+						gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
 					}
 					else {
-						pos = (x*(size - 1) + (size - 1) / 2 + ((total_size - 1) - (size - 1) / 2) * total_size) * 3 + 1;
-						g = (a + e + b + vertexArray[pos]) / 4 + randval(-rand, rand);
-						vertexArray[(x*(size-1) + (size - 1)/2 + (total_size - 1) * total_size) * 3 + 1] = g;
+						// edges != 0
+						pos = (x*(size - 1) + (size - 1) / 2 + ((total_size - 1) - (size - 1) / 2) * total_size);
+						gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
+					
+						// edges = 0
+						//gval = 0;
+					
+						imax = (x*(size - 1) + (size - 1) / 2 + (total_size - 1) * total_size);
+						heightArray[imax] = gval;
 					}
-					vertexArray[(x * (size - 1) + ((z * (size-1) + (size - 1)/2) * total_size)) * 3 + 1] = f;
-					vertexArray[(x*(size-1) + (size - 1)/2 + z * (size - 1) * total_size) * 3 + 1] = g;
+					
+					heightArray[f] = fval;
+					heightArray[g] = gval;
+					//heightArray[(0 * (size - 1) + ((z * (size - 1) + (size - 1) / 2) * total_size))] = 0; // set f=0 again. why otherwize not 0??  // edges = 0
+		
+				
 
 		//		}
 				}
 			}
 		
-		
-		if (size == 2) break;   // gör snyggare
+		if (size == 2) break;  
 		size = (size / 2) + 1;
 		squares_per_side *= 2;
 
-		rand = rand / 2; sqrt(2);
+		rand = rand / sqrt(2);
 		num++;
 
 	}
-
 	printf("Iterations diamondSquare: %d\n", num);
+
+	for (x = 0; x < tex->width; x++) {
+		for (z = 0; z < tex->height; z++) {
+			vertexArray[(x + z * tex->width)*3 +1] = heightArray[(x + z * tex->width)];
+		}
+	}
 	return vertexArray;
 }
 
