@@ -122,35 +122,36 @@ float randval(float min, float max)
 {
 	return (float)rand() / (float)RAND_MAX * (max - min) + min;
 	//return (float)rand() / (float)RAND_MAX * (2*max - min) + min;
+	//return (float)rand() / (float)RAND_MAX * (max -0) + 0;
 }
 
 
-GLfloat* DiamondSquare(TextureData *tex) {
+GLfloat* DiamondSquare(int height, int width, int bpp) {
 
-	int vertexCount = tex->width * tex->height;
-	printf("vertices: %d\nwidth: %d\n", vertexCount, tex->width);// (256*256) -> changed to 257*257. imageData not valid anymore
-	int triangleCount = (tex->width - 1) * (tex->height - 1) * 2;
+	int vertexCount = width * height;
+	printf("vertices: %d\nwidth: %d\n", vertexCount, width);// (256*256) -> changed to 257*257. imageData not valid anymore
+	int triangleCount = (width - 1) * (height - 1) * 2;
 	int x, z;
 
 	GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
 	GLfloat *heightArray = malloc(sizeof(GLfloat) * vertexCount);
 
-	for (x = 0; x < tex->width; x++) {
-		for (z = 0; z < tex->height; z++){
-			heightArray[(x + z * tex->width)] = 0;
+	for (x = 0; x < width; x++) {
+		for (z = 0; z < height; z++){
+			heightArray[(x + z * width)] = 0;
 		}
 	}
 
-	printf("bpp %d\n", tex->bpp); //bits per pixel -> bpp/8 = bytes per pixel
-	for (x = 0; x < tex->width; x++)
+	printf("bpp %d\n", bpp); //bits per pixel -> bpp/8 = bytes per pixel
+	for (x = 0; x < width; x++)
 	{
-		for (z = 0; z < tex->height; z++)
+		for (z = 0; z < height; z++)
 			{
 			// Vertex array. You need to scale this properly
-			vertexArray[(x + z * tex->width) * 3 + 0] = x / 1.0;
-			vertexArray[(x + z * tex->width) * 3 + 2] = z / 1.0;
-		//	vertexArray[(x + z * tex->width) * 3 + 1] = 0; // tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] / 10.0;
-			vertexArray[(x + z * tex->width) * 3 + 1] = heightArray[(x + z * tex->width)];
+			vertexArray[(x + z * width) * 3 + 0] = x / 1.0;
+			vertexArray[(x + z * width) * 3 + 2] = z / 1.0;
+		//	vertexArray[(x + z * width) * 3 + 1] = 0; 
+		//	vertexArray[(x + z * width) * 3 + 1] = heightArray[(x + z * width)];
 			}
 	}
 
@@ -178,11 +179,11 @@ GLfloat* DiamondSquare(TextureData *tex) {
 	//	C   .   I   .   D
 
 	int squares_per_side = 1;
-	int size = tex->height; //square size (length of one side)
-	int total_size = tex->height; // terrain size (length of one side)
+	int size = height; //square size (length of one side)
+	int total_size = height; // terrain size (length of one side)
 	GLfloat/* a, b, c, d, e, f, g,*/ fval,gval,rand;// (x, y = [0 - 256]: 257 vertices)
 	int a, b, c, d, e, f, g, hmax, imax;
-	rand = 60.0;
+	rand = 100.0;
 	int num = 0; // nb of iterations
 	int pos = 0;
 								  						  
@@ -282,9 +283,22 @@ GLfloat* DiamondSquare(TextureData *tex) {
 	}
 	printf("Iterations diamondSquare: %d\n", num);
 
-	for (x = 0; x < tex->width; x++) {
-		for (z = 0; z < tex->height; z++) {
-			vertexArray[(x + z * tex->width)*3 +1] = heightArray[(x + z * tex->width)];
+	GLfloat h1, h2;
+	for (x = 0; x < width; x++) {
+		for (z = 0; z < height; z++) {
+			h1 = (heightArray[(total_size - 1 + z * width)] + heightArray[(0 + z * width)]) / 2;
+			h2 = (heightArray[(x + (total_size-1) * width)] + heightArray[(x + 0 * width)]) / 2;
+			
+			heightArray[(0 + z * width)] = h1;
+			heightArray[(x + 0 * width)] = h2;
+			heightArray[((total_size-1) + z * width)] = h1;
+			heightArray[(x + (total_size-1) * width)] = h2;
+		}
+	}
+
+	for (x = 0; x < width; x++) {
+		for (z = 0; z < height; z++) {
+			vertexArray[(x + z * width)*3 +1] = 1+heightArray[(x + z * width)];
 		}
 	}
 	return vertexArray;
@@ -300,7 +314,7 @@ GLfloat* DiamondSquare(TextureData *tex) {
 	int triangleCount = (tex->width - 1) * (tex->height - 1) * 2;
 	int x, z;
 
-	GLfloat *vertexArray = DiamondSquare(tex);
+	GLfloat *vertexArray = DiamondSquare(tex->height, tex->width, tex->bpp);
 	//GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
 	GLfloat *normalArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
 	GLfloat *texCoordArray = malloc(sizeof(GLfloat) * 2 * vertexCount);
@@ -479,7 +493,7 @@ void mouse(int x, int y)
 
 void key(char c, int x, int y)
 {
-	printf("hit a key\n");
+	//printf("hit a key\n");
 	switch (c)
 	{
 	case 'A':
@@ -509,7 +523,7 @@ void key(char c, int x, int y)
 
 void antikey(char c, int x, int y)
 {
-	printf("hit a key\n");
+	//printf("hit a key\n");
 	switch (c)
 	{
 	case 'A':
@@ -723,7 +737,7 @@ void display(void)
 	DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 	
 
-	printVec3(p);
+	//printVec3(p);
 
 	//utökad terräng
 	float extx = p.x / ttex.width;
@@ -733,7 +747,10 @@ void display(void)
 	double tempz, fz = modf(extz, &tempz);
 
 
-	if ( (extx > 0.2 && extz > 0.2) || (extx < 0.2 && extz < 0.2)) { //första och tredje kvadranten
+
+	
+
+	if ( (extx > 0.2 && extz > 0.2) || (extx < 0.2 && extz < 0.2)) { //första och tredje kvadranten 
 
 		for (auto xled = 0; xled <= ((extx - 0.3) > 0 ? ceil(extx - 0.3): fabs(floor(extx - 0.3))); xled++) {
 			for (auto zled = 0; zled <= ((extz - 0.3) > 0 ? ceil(extz - 0.3) : fabs(floor(extz - 0.3))); zled++) {
