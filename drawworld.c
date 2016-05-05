@@ -133,26 +133,13 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 	int triangleCount = (width - 1) * (height - 1) * 2;
 	int x, z;
 
-	GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
+	//	GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
 	GLfloat *heightArray = malloc(sizeof(GLfloat) * vertexCount);
 
 	for (x = 0; x < width; x++) {
-		for (z = 0; z < height; z++){
+		for (z = 0; z < height; z++) {
 			heightArray[(x + z * width)] = 0;
 		}
-	}
-
-	printf("bpp %d\n", bpp); //bits per pixel -> bpp/8 = bytes per pixel
-	for (x = 0; x < width; x++)
-	{
-		for (z = 0; z < height; z++)
-			{
-			// Vertex array. You need to scale this properly
-			vertexArray[(x + z * width) * 3 + 0] = x / 1.0;
-			vertexArray[(x + z * width) * 3 + 2] = z / 1.0;
-		//	vertexArray[(x + z * width) * 3 + 1] = 0; 
-		//	vertexArray[(x + z * width) * 3 + 1] = heightArray[(x + z * width)];
-			}
 	}
 
 	// Diamond Square algorithm
@@ -181,17 +168,17 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 	int squares_per_side = 1;
 	int size = height; //square size (length of one side)
 	int total_size = height; // terrain size (length of one side)
-	GLfloat/* a, b, c, d, e, f, g,*/ fval,gval,rand;// (x, y = [0 - 256]: 257 vertices)
+	GLfloat/* a, b, c, d, e, f, g,*/ fval, gval, rand;// (x, y = [0 - 256]: 257 vertices)
 	int a, b, c, d, e, f, g, hmax, imax;
 	rand = 100.0;
 	int num = 0; // nb of iterations
 	int pos = 0;
-								  						  
-    // height of corners
+
+	// height of corners
 	heightArray[(0 + 0 * total_size)] = 0; // A
 	heightArray[(256 + 0 * total_size)] = 0; // B
 	heightArray[(0 + 256 * total_size)] = 0; // C
-	heightArray[(256 + 256 * total_size) ] = 0; // D
+	heightArray[(256 + 256 * total_size)] = 0; // D
 
 	while (size > 0) {
 		int x, z;
@@ -199,18 +186,18 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 		// diamond step
 		for (x = 0; x < squares_per_side; x++) {
 			for (z = 0; z < squares_per_side; z++) {
-		//		if (num < 2) {
-					a = (x * (size - 1) + z * (size - 1) * total_size);
-					b = a + (size - 1);											
-					c = a + (size - 1) * total_size;													
-					d = a + (size - 1) + (size - 1) * total_size;										
-					e = a + (size - 1) / 2 + ((size - 1) / 2) * total_size;									
-				
-					float randvalue = randval(-rand, rand);
+				//		if (num < 2) {
+				a = (x * (size - 1) + z * (size - 1) * total_size);
+				b = a + (size - 1);
+				c = a + (size - 1) * total_size;
+				d = a + (size - 1) + (size - 1) * total_size;
+				e = a + (size - 1) / 2 + ((size - 1) / 2) * total_size;
+
+				float randvalue = randval(-rand, rand);
 				//	if (num == 0) { randvalue = abs(randvalue); } // uncomment to make the first e-value positive 
-					heightArray[e] = (heightArray[a] + heightArray[b] + heightArray[c] + heightArray[d]) / 4 + randvalue;// randval(-rand, rand);
-			
-		//		}
+				heightArray[e] = (heightArray[a] + heightArray[b] + heightArray[c] + heightArray[d]) / 4 + randvalue;// randval(-rand, rand);
+
+																													 //		}
 			}
 		}
 
@@ -218,7 +205,7 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 		rand = rand / sqrt(2);
 		for (x = 0; x < squares_per_side; x++) {
 			for (z = 0; z < squares_per_side; z++) {
-			//if (num < 10) {
+				//if (num < 10) {
 
 				a = (x * (size - 1) + z * (size - 1) * total_size);
 				b = a + (size - 1);
@@ -231,49 +218,49 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 
 
 
-					if (x > 0) { 
-						pos = e - (size - 1);
-						fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
-					}
-					else {
-						// edges != 0
-						pos = (((total_size - 1) - (size - 1) / 2) + (z * (size - 1) + (size - 1) / 2) * total_size);
-						fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
-					
-						// edges = 0
-						//fval = 0;
-
-						hmax = ((total_size - 1) + (z*(size - 1) + (size - 1) / 2) * total_size);
-						heightArray[hmax] = fval;
-					}
-				
-					if (z > 0) {
-						pos = e - (size - 1) * total_size;
-						gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
-					}
-					else {
-						// edges != 0
-						pos = (x*(size - 1) + (size - 1) / 2 + ((total_size - 1) - (size - 1) / 2) * total_size);
-						gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
-					
-						// edges = 0
-						//gval = 0;
-					
-						imax = (x*(size - 1) + (size - 1) / 2 + (total_size - 1) * total_size);
-						heightArray[imax] = gval;
-					}
-					
-					heightArray[f] = fval;
-					heightArray[g] = gval;
-					//heightArray[(0 * (size - 1) + ((z * (size - 1) + (size - 1) / 2) * total_size))] = 0; // set f=0 again. why otherwize not 0??  // edges = 0
-		
-				
-
-		//		}
+				if (x > 0) {
+					pos = e - (size - 1);
+					fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
 				}
+				else {
+					// edges != 0
+					pos = (((total_size - 1) - (size - 1) / 2) + (z * (size - 1) + (size - 1) / 2) * total_size);
+					fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
+
+					// edges = 0
+					//fval = 0;
+
+					hmax = ((total_size - 1) + (z*(size - 1) + (size - 1) / 2) * total_size);
+					heightArray[hmax] = fval;
+				}
+
+				if (z > 0) {
+					pos = e - (size - 1) * total_size;
+					gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
+				}
+				else {
+					// edges != 0
+					pos = (x*(size - 1) + (size - 1) / 2 + ((total_size - 1) - (size - 1) / 2) * total_size);
+					gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
+
+					// edges = 0
+					//gval = 0;
+
+					imax = (x*(size - 1) + (size - 1) / 2 + (total_size - 1) * total_size);
+					heightArray[imax] = gval;
+				}
+
+				heightArray[f] = fval;
+				heightArray[g] = gval;
+				//heightArray[(0 * (size - 1) + ((z * (size - 1) + (size - 1) / 2) * total_size))] = 0; // set f=0 again. why otherwize not 0??  // edges = 0
+
+
+
+				//		}
 			}
-		
-		if (size == 2) break;  
+		}
+
+		if (size == 2) break;
 		size = (size / 2) + 1;
 		squares_per_side *= 2;
 
@@ -287,84 +274,85 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 	for (x = 0; x < width; x++) {
 		for (z = 0; z < height; z++) {
 			h1 = (heightArray[(total_size - 1 + z * width)] + heightArray[(0 + z * width)]) / 2;
-			h2 = (heightArray[(x + (total_size-1) * width)] + heightArray[(x + 0 * width)]) / 2;
-			
+			h2 = (heightArray[(x + (total_size - 1) * width)] + heightArray[(x + 0 * width)]) / 2;
+
 			heightArray[(0 + z * width)] = h1;
 			heightArray[(x + 0 * width)] = h2;
-			heightArray[((total_size-1) + z * width)] = h1;
-			heightArray[(x + (total_size-1) * width)] = h2;
+			heightArray[((total_size - 1) + z * width)] = h1;
+			heightArray[(x + (total_size - 1) * width)] = h2;
 		}
 	}
 
-	for (x = 0; x < width; x++) {
-		for (z = 0; z < height; z++) {
-			vertexArray[(x + z * width)*3 +1] = 1+heightArray[(x + z * width)];
-		}
-	}
-	return vertexArray;
+	return heightArray;
+
 }
 
 
 
 
-	Model* GenerateTerrain(TextureData *tex)
+Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 {
-	int vertexCount = tex->width * tex->height;
-	printf("vertices: %d\n",vertexCount);// (256*256) -> should be 257*257 -> ok! changed it :) 
-	int triangleCount = (tex->width - 1) * (tex->height - 1) * 2;
+
+	int vertexCount = width * width;
+	printf("vertices: %d\n", vertexCount);// (256*256) -> should be 257*257 -> ok! changed it :) 
+	int triangleCount = (width - 1) * (width - 1) * 2;
 	int x, z;
 
-	GLfloat *vertexArray = DiamondSquare(tex->height, tex->width, tex->bpp);
-	//GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
+	GLfloat* heightArray;
+	GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
 	GLfloat *normalArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
 	GLfloat *texCoordArray = malloc(sizeof(GLfloat) * 2 * vertexCount);
 	GLuint *indexArray = malloc(sizeof(GLuint) * triangleCount * 3);
 
 	vec3 temp1, temp2, temp3, res;
-	
 
-	printf("bpp %d\n", tex->bpp);
-	for (x = 0; x < tex->width; x++)
-		for (z = 0; z < tex->height; z++)
+	if (diamondSquare) { heightArray = DiamondSquare(width, width, bpp); }
+
+	printf("bpp %d\n", bpp);
+	for (x = 0; x < width; x++)
+		for (z = 0; z < width; z++)
 		{
-	//		// Vertex array. You need to scale this properly
-	//		vertexArray[(x + z * tex->width) * 3 + 0] = x / 1.0;
-	//	vertexArray[(x + z * tex->width) * 3 + 1] = 0;   //tex->imageData[(x + z * tex->width) * (tex->bpp / 8)] / 10.0;
-	//		vertexArray[(x + z * tex->width) * 3 + 2] = z / 1.0;
-			
-			
+			//		// Vertex array. You need to scale this properly
+			vertexArray[(x + z * width) * 3 + 0] = x / 1.0;
+			if (diamondSquare) {
+				vertexArray[(x + z * width) * 3 + 1] = 1 + heightArray[(x + z * width)];
+			}
+			else { vertexArray[(x + z * width) * 3 + 1] = 0; }
+			vertexArray[(x + z * width) * 3 + 2] = z / 1.0;
+
+
 
 			// Normal vectors. You need to calculate these.
-			temp1 = SetVector(x / 1.0, vertexArray[(x + z * tex->width) * 3 + 0], (z + 1)/1.0); //upp
-			temp2 = SetVector((x + 1) / 1.0, vertexArray[(x + z * tex->width) * 3 + 1], z / 1.0); //sidan
-			temp3 = SetVector((x - 1) / 1.0, vertexArray[(x + z * tex->width) * 3 + 2], (z - 1)/ 1.0); //ner + bakom
+			temp1 = SetVector(x / 1.0, vertexArray[(x + z * width) * 3 + 0], (z + 1) / 1.0); //upp
+			temp2 = SetVector((x + 1) / 1.0, vertexArray[(x + z * width) * 3 + 1], z / 1.0); //sidan
+			temp3 = SetVector((x - 1) / 1.0, vertexArray[(x + z * width) * 3 + 2], (z - 1) / 1.0); //ner + bakom
 
-			//res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
-			res = CalcNormalVector(temp3 ,temp2 ,temp1);
+																								   //res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
+			res = CalcNormalVector(temp3, temp2, temp1);
 
-			//if (x*z != 0 || x == tex->width-1 || x == tex->height-1) {	//om noden inte är på "kanten"
-				normalArray[(x + z * tex->width) * 3 + 0] = res.x;
-				normalArray[(x + z * tex->width) * 3 + 1] = res.y;
-				normalArray[(x + z * tex->width) * 3 + 2] = res.z;
+			//if (x*z != 0 || x == width-1 || x == width-1) {	//om noden inte är på "kanten"
+			normalArray[(x + z * width) * 3 + 0] = res.x;
+			normalArray[(x + z * width) * 3 + 1] = res.y;
+			normalArray[(x + z * width) * 3 + 2] = res.z;
 			//}
 
 
 			// Texture coordinates. You may want to scale them.
-			
-			texCoordArray[(x + z * tex->width) * 2 + 0] = x; // (float)x / tex->width;
-			texCoordArray[(x + z * tex->width) * 2 + 1] = z; // (float)z / tex->height;
+
+			texCoordArray[(x + z * width) * 2 + 0] = x; // (float)x / width;
+			texCoordArray[(x + z * width) * 2 + 1] = z; // (float)z / width;
 		}
-	for (x = 0; x < tex->width - 1; x++)
-		for (z = 0; z < tex->height - 1; z++)
+	for (x = 0; x < width - 1; x++)
+		for (z = 0; z < width - 1; z++)
 		{
 			// Triangle 1
-			indexArray[(x + z * (tex->width - 1)) * 6 + 0] = x + z * tex->width;
-			indexArray[(x + z * (tex->width - 1)) * 6 + 1] = x + (z + 1) * tex->width;
-			indexArray[(x + z * (tex->width - 1)) * 6 + 2] = x + 1 + z * tex->width;
+			indexArray[(x + z * (width - 1)) * 6 + 0] = x + z * width;
+			indexArray[(x + z * (width - 1)) * 6 + 1] = x + (z + 1) * width;
+			indexArray[(x + z * (width - 1)) * 6 + 2] = x + 1 + z * width;
 			// Triangle 2
-			indexArray[(x + z * (tex->width - 1)) * 6 + 3] = x + 1 + z * tex->width;
-			indexArray[(x + z * (tex->width - 1)) * 6 + 4] = x + (z + 1) * tex->width;
-			indexArray[(x + z * (tex->width - 1)) * 6 + 5] = x + 1 + (z + 1) * tex->width;
+			indexArray[(x + z * (width - 1)) * 6 + 3] = x + 1 + z * width;
+			indexArray[(x + z * (width - 1)) * 6 + 4] = x + (z + 1) * width;
+			indexArray[(x + z * (width - 1)) * 6 + 5] = x + 1 + (z + 1) * width;
 		}
 
 	// End of terrain generation
@@ -384,80 +372,7 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 }
 
 
-	Model* GenerateZeroHeight(TextureData *tex)
-	{
-		int vertexCount = tex->width * tex->height;
-		printf("vertices: %d\n", vertexCount);
-		int triangleCount = (tex->width - 1) * (tex->height - 1) * 2;
-		int x, z;
-
-		GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
-		GLfloat *normalArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
-		GLfloat *texCoordArray = malloc(sizeof(GLfloat) * 2 * vertexCount);
-		GLuint *indexArray = malloc(sizeof(GLuint) * triangleCount * 3);
-
-		vec3 temp1, temp2, temp3, res;
-
-
-		printf("bpp %d\n", tex->bpp);
-		for (x = 0; x < tex->width; x++)
-			for (z = 0; z < tex->height; z++)
-			{
-				// Vertex array. You need to scale this properly
-				vertexArray[(x + z * tex->width) * 3 + 0] = x / 1.0;
-				vertexArray[(x + z * tex->width) * 3 + 1] = 0;
-				vertexArray[(x + z * tex->width) * 3 + 2] = z / 1.0;
-
-
-
-				// Normal vectors. You need to calculate these.
-				temp1 = SetVector(x / 1.0, vertexArray[(x + z * tex->width) * 3 + 0], (z + 1) / 1.0); //upp
-				temp2 = SetVector((x + 1) / 1.0, vertexArray[(x + z * tex->width) * 3 + 1], z / 1.0); //sidan
-				temp3 = SetVector((x - 1) / 1.0, vertexArray[(x + z * tex->width) * 3 + 2], (z - 1) / 1.0); //ner + bakom
-
-				//res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
-				res = CalcNormalVector(temp3, temp2, temp1);
-
-				//if (x*z != 0 || x == tex->width-1 || x == tex->height-1) {	//om noden inte är på "kanten"
-				normalArray[(x + z * tex->width) * 3 + 0] = res.x;
-				normalArray[(x + z * tex->width) * 3 + 1] = res.y;
-				normalArray[(x + z * tex->width) * 3 + 2] = res.z;
-				//}
-
-
-				// Texture coordinates. You may want to scale them.
-
-				texCoordArray[(x + z * tex->width) * 2 + 0] = x; // (float)x / tex->width;
-				texCoordArray[(x + z * tex->width) * 2 + 1] = z; // (float)z / tex->height;
-			}
-		for (x = 0; x < tex->width - 1; x++)
-			for (z = 0; z < tex->height - 1; z++)
-			{
-				// Triangle 1
-				indexArray[(x + z * (tex->width - 1)) * 6 + 0] = x + z * tex->width;
-				indexArray[(x + z * (tex->width - 1)) * 6 + 1] = x + (z + 1) * tex->width;
-				indexArray[(x + z * (tex->width - 1)) * 6 + 2] = x + 1 + z * tex->width;
-				// Triangle 2
-				indexArray[(x + z * (tex->width - 1)) * 6 + 3] = x + 1 + z * tex->width;
-				indexArray[(x + z * (tex->width - 1)) * 6 + 4] = x + (z + 1) * tex->width;
-				indexArray[(x + z * (tex->width - 1)) * 6 + 5] = x + 1 + (z + 1) * tex->width;
-			}
-
-		// End of terrain generation
-
-		// Create Model and upload to GPU:
-
-		Model* model = LoadDataToModel(
-			vertexArray,
-			normalArray,
-			texCoordArray,
-			NULL,
-			indexArray,
-			vertexCount,
-			triangleCount * 3);
-
-		return model;
-	}
+	
 
 mat4 rot, trans, total;
 GLfloat a, b, px, py, mx, my, siderotation, uprotation = 0.0;
@@ -473,7 +388,7 @@ vec3 p_ad;
 // vertex array object
 Model *m, *m2, *tm, *m_sphere, *m_bunny, *m_skybox, *water_terrain;
 // Reference to shader program
-GLuint program;
+GLuint program, skyboxshader;
 GLuint tex1, tex2, sky_tex, water_tex;
 TextureData ttex; // terrain
 
@@ -568,6 +483,7 @@ void init(void)
 
 	// Load and compile shader
 	program = loadShaders("terrain.vert", "terrain.frag");
+	skyboxshader = loadShaders("skybox.vert", "skybox.frag");
 	glUseProgram(program);
 	printError("init shader");
 	
@@ -588,10 +504,10 @@ void init(void)
 	// Load terrain data
 
 	LoadTGATextureData("fft-terrain257.tga", &ttex);
-	tm = GenerateTerrain(&ttex);
+	tm = GenerateTerrain(257,32,true);
 
 	LoadTGATextureData("water-texture-2.tga", &water_tex);
-	water_terrain = GenerateZeroHeight(&ttex);
+	water_terrain = GenerateTerrain(257,32,false);
 
 
 	//printError("init terrain");
@@ -678,32 +594,35 @@ void display(void)
 	}
 
 	//MOVEMENT END		
-
 	//SKYBOX START
+	glUseProgram(skyboxshader);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, sky_tex);
 	glDisable(GL_DEPTH_TEST);
-	
+
+
 	total = S(1.0f, 1.0f, 1.0f);
-	glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
-	
+	glUniformMatrix4fv(glGetUniformLocation(skyboxshader, "mdlMatrix"), 1, GL_TRUE, total.m);
+
 	mat4 lA = lookAtv(p, l, v);
 	lA.m[3] = 0.0;
 	lA.m[7] = 0.0;
 	lA.m[11] = 0.0;
-	glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lA.m); //är det fel här?
+	glUniformMatrix4fv(glGetUniformLocation(skyboxshader, "lookAt"), 1, GL_TRUE, lA.m); //är det fel här?
 
-	
+
 	texflag = 3;
-	glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
+	//glUniform1fv(glGetUniformLocation(skyboxshader, "texflag"), 1, &texflag);
 	texflag = 0;
-	DrawModel(m_skybox, program, "inPosition", "inNormal", "inTexCoord");
-	
+	glUniformMatrix4fv(glGetUniformLocation(skyboxshader, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+	DrawModel(m_skybox, skyboxshader, "inPosition", NULL, "inTexCoord");
+
 	glEnable(GL_DEPTH_TEST);
 	//SKYBOX END	
 
 
 	//specular shading start
+	glUseProgram(program);
 	glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 4, &lightSourcesDirectionsPositions[0].x);
 	glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 4, &lightSourcesColorsArr[0].x);
 	glUniform1fv(glGetUniformLocation(program, "specularExponent"), 4, specularExponent);
