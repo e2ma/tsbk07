@@ -720,118 +720,39 @@ void display(void)
 						 0.0, 1.0, 0.0);
 	modelView = IdentityMatrix();
 	total = S(1.0f, 1.0f, 1.0f);
-	
 
-	glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
-	glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
-	glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-
-	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
-	texflag = 1;
-	glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
-	DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
-
-	glBindTexture(GL_TEXTURE_2D, water_terrain);		// Bind Our Texture 
-	texflag = 3;
-	glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
-	DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
-	
-
-	//printVec3(p);
+	printVec3(p);
 
 	//utökad terräng
 	float extx = p.x / ttex.width;
 	float extz = p.z / ttex.width;
 
-	double tempx, fx = modf(extx, &tempx);
-	double tempz, fz = modf(extz, &tempz);
-
-
-
+	int tempx = (extx > 0 ? (int)extx : -1 * ceil(fabs(extx)));
+	int tempz = (extz > 0 ? (int)extz : -1 * ceil(fabs(extz)));
 	
+	//Draw 8 triangles around camera, 9 in total
+	for (auto xled = (tempx - 1); xled <= (tempx + 1); xled++) {
+		for (auto zled = (tempz - 1); zled <= (tempz + 1); zled++) {
 
-	if ( (extx > 0.2 && extz > 0.2) || (extx < 0.2 && extz < 0.2)) { //första och tredje kvadranten 
+			int tx = xled * (ttex.width - 1);
+			int tz = zled * (ttex.width - 1);
 
-		for (auto xled = 0; xled <= ((extx - 0.3) > 0 ? ceil(extx - 0.3): fabs(floor(extx - 0.3))); xled++) {
-			for (auto zled = 0; zled <= ((extz - 0.3) > 0 ? ceil(extz - 0.3) : fabs(floor(extz - 0.3))); zled++) {
+			trans = T(tx, 0, tz);
+			rot = Rx(0);
+			total = Mult(trans, rot);
+			total = Mult(total, S(1.0f, 1.0f, 1.0f));
 
-				int aasd = ((extx - 0.3) > 0 ? ceil(extx - 0.3) : fabs(floor(extx - 0.3)));
-				int absd = ((extz - 0.3) > 0 ? 1 : -1);
-				
-				int tx = (ttex.width - 1) * xled * ((extx - 0.3) > 0 ? 1 : -1);
-				int tz = (ttex.width - 1) * zled * ((extz - 0.3) > 0 ? 1 : -1);
+			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
+			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
+			glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
-				//trans = T( (ttex.width-1) * xled * ((extx - 0.3) > 0 ? 1:-1),	0,	(ttex.width - 1) * zled * ((extz - 0.3) > 0 ? 1 : -1));
-				trans = T(tx, 0, tz);
-				rot = Rx(0);
-				total = Mult(trans, rot);
-				total = Mult(total, S(1.0f, 1.0f, 1.0f));
+			glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
+			texflag = 1;
+			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
+			DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
 
-				glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
-				glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
-				glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-
-				glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
-				texflag = 1;
-				glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
-				DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
-
-				glBindTexture(GL_TEXTURE_2D, water_terrain);		// Bind Our Texture 
-				texflag = 3;
-				glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
-				DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
-			}
 		}
-
-	}
-	else if ( (extx < 0.2 && extz > 0.2) || (extx > 0.2 && extz < 0.2) ) { //andra och fjärde kvadranten?
-		for (auto xled = 0; xled <= ((fabs(extx) - 0.3) > 0 ? ceil(fabs(extx) - 0.3) : fabs(floor(fabs(extx) - 0.3))) + 1; xled++) {
-			for (auto zled = 0; zled <= ((extz - 0.3) > 0 ? ceil(extz - 0.3) : fabs(floor(extz - 0.3))); zled++) {
-
-				int aasd = ((fabs(extx) - 0.3) > 0 ? ceil(fabs(extx) - 0.3) : fabs(floor(fabs(extx) - 0.3))) + 1;
-				int acsd = ((extz - 0.3) > 0 ? ceil(extz - 0.3) : fabs(floor(extz - 0.3)));
-				int absd = ((extz - 0.3) > 0 ? 1 : -1);
-
-				int tx = (ttex.width - 1) * xled * ((extx - 0.3) > 0 ? 1 : -1);
-				int tz = (ttex.width - 1) * zled * ((extz - 0.3) > 0 ? 1 : -1);
-				trans = T(tx, 0, tz);
-				rot = Rx(0);
-				total = Mult(trans, rot);
-				total = Mult(total, S(1.0f, 1.0f, 1.0f));
-
-				glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
-				glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
-				glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-
-				glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
-				texflag = 1;
-				glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
-				DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
-
-				glBindTexture(GL_TEXTURE_2D, water_terrain);		// Bind Our Texture 
-				texflag = 3;
-				glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
-				DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
-			}
-		}
-	}
-	//else if (extz > 0.8 && extx < 0.8) {
-	//	for (auto zled = 0; zled != round(extz - 0.3); zled++) {
-	//		trans = T(0, 0, (ttex.width - 1) * (zled + 1));
-	//		rot = Rx(0);
-	//		total = Mult(trans, rot);
-	//		total = Mult(total, S(1.0f, 1.0f, 1.0f));
-
-	//		glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
-	//		glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
-	//		glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-
-	//		glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
-	//		texflag = 1;
-	//		glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
-	//		DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
-	//	}
-	//}
+	}	
 
 	////boll
 	//trans = t( fabs(80.0*sin(t/30.0)) , calcheight( fabs(80.0*sin(t/30.0)) , fabs(80.0*cos(t/30.0)) , tm , ttex.width), fabs(80.0*cos(t/30.0)));
