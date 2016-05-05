@@ -63,9 +63,7 @@ void main(void)
 		color = color + shade_temp * lightSourcesColorArr[i];
 		
 	}
-	if(height < 0.1){
-		outcolor = vec4(0.0, 0.0, 1.0, 1.0);	//vatten
-	}else if(texflag == 0){
+	if(texflag == 0){
 		outcolor = vec4(color, 1.0);// för modeller som inte har texture, denna ger en färg istället
 		//outcolor = texture(texUnit, outTexCoord) * vec4(color, 1.0);
 	}else if(texflag == 1){

@@ -46,7 +46,6 @@ Point3D lightSourcesDirectionsPositions[] = { { 10.0f, 5.0f, 0.0f }, // Red ligh
 
 //specular shading END
 
-
 #define near 1.0
 #define far 300.0
 #define right 1.0
@@ -327,7 +326,7 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 			temp2 = SetVector((x + 1) / 1.0, vertexArray[(x + z * width) * 3 + 1], z / 1.0); //sidan
 			temp3 = SetVector((x - 1) / 1.0, vertexArray[(x + z * width) * 3 + 2], (z - 1) / 1.0); //ner + bakom
 
-																								   //res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
+			//res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
 			res = CalcNormalVector(temp3, temp2, temp1);
 
 			//if (x*z != 0 || x == width-1 || x == width-1) {	//om noden inte är på "kanten"
@@ -339,8 +338,8 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 
 			// Texture coordinates. You may want to scale them.
 
-			texCoordArray[(x + z * width) * 2 + 0] = x; // (float)x / width;
-			texCoordArray[(x + z * width) * 2 + 1] = z; // (float)z / width;
+			texCoordArray[(x + z * width) * 2 + 0] = (float)x / (width / 60); //x
+			texCoordArray[(x + z * width) * 2 + 1] = (float)z / (width / 60); //y
 		}
 	for (x = 0; x < width - 1; x++)
 		for (z = 0; z < width - 1; z++)
@@ -498,7 +497,7 @@ void init(void)
 
 	glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0); // Texture unit 0
-	LoadTGATextureSimple("grass.tga", &tex1);
+	LoadTGATextureSimple("grass2.tga", &tex1);
 	LoadTGATextureSimple("skybox512.tga", &sky_tex);
 
 	// Load terrain data
@@ -506,7 +505,7 @@ void init(void)
 	LoadTGATextureData("fft-terrain257.tga", &ttex);
 	tm = GenerateTerrain(257,32,true);
 
-	LoadTGATextureData("water-texture-2.tga", &water_tex);
+	LoadTGATextureSimple("water.tga", &water_tex);
 	water_terrain = GenerateTerrain(257,32,false);
 
 
@@ -669,6 +668,12 @@ void display(void)
 			texflag = 1;
 			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 			DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
+			
+			
+			glBindTexture(GL_TEXTURE_2D, water_tex);		// Bind Our Texture tex1
+			texflag = 1;
+			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
+			DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 
 		}
 	}	
