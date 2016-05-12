@@ -31,9 +31,14 @@
 
 //specular shading START
 
-Point3D lightSourcesColorsArr[] = { { 1.0f, 0.0f, 0.0f }, // Red light
-{ 0.0f, 1.0f, 0.0f }, // Green light
-{ 0.0f, 0.0f, 1.0f }, // Blue light
+//Point3D lightSourcesColorsArr[] = { { 1.0f, 0.0f, 0.0f }, // Red light
+//{ 0.0f, 1.0f, 0.0f }, // Green light
+//{ 0.0f, 0.0f, 1.0f }, // Blue light
+//{ 1.0f, 1.0f, 1.0f } }; // White light
+
+Point3D lightSourcesColorsArr[] = { { 1.0f, 1.0f, 1.0f }, // Red light
+{ 1.0f, 1.0f, 1.0f }, // Green light
+{ 1.0f, 1.0f, 1.0f }, // Blue light
 { 1.0f, 1.0f, 1.0f } }; // White light
 
 GLfloat specularExponent[] = { 10.0, 20.0, 60.0, 5.0 };
@@ -41,8 +46,8 @@ GLint isDirectional[] = { 0,0,1,1 };
 
 Point3D lightSourcesDirectionsPositions[] = { { 10.0f, 5.0f, 0.0f }, // Red light, positional
 { 0.0f, 5.0f, 10.0f }, // Green light, positional
-{ -1.0f, 0.0f, 0.0f }, // Blue light along X
-{ 0.0f, 0.0f, -1.0f } }; // White light along Z
+{ 0.0f, -1.0f, -1.0f }, // Blue light along X
+{ -1.0f, 0.0f, -1.0f } }; // White light along Z
 
 //specular shading END
 
@@ -315,18 +320,48 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 
 
 			// Normal vectors. You need to calculate these.
-			temp1 = SetVector(x / 1.0, vertexArray[(x + z * width) * 3 + 0], (z + 1) / 1.0); //upp
-			temp2 = SetVector((x + 1) / 1.0, vertexArray[(x + z * width) * 3 + 1], z / 1.0); //sidan
-			temp3 = SetVector((x - 1) / 1.0, vertexArray[(x + z * width) * 3 + 2], (z - 1) / 1.0); //ner + bakom
+			//temp1 = SetVector(x / 1.0, vertexArray[(x + z * width) * 3 + 0], (z + 1) / 1.0); //upp
+			//temp2 = SetVector((x + 1) / 1.0, vertexArray[(x + z * width) * 3 + 1], z / 1.0); //sidan
+			//temp3 = SetVector((x - 1) / 1.0, vertexArray[(x + z * width) * 3 + 2], (z - 1) / 1.0); //ner + bakom
 
-			//res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
-			res = CalcNormalVector(temp3, temp2, temp1);
+			////res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
+			//res = CalcNormalVector(temp3, temp2, temp1);
 
-			//if (x*z != 0 || x == width-1 || x == width-1) {	//om noden inte är på "kanten"
-			normalArray[(x + z * width) * 3 + 0] = res.x;
-			normalArray[(x + z * width) * 3 + 1] = res.y;
-			normalArray[(x + z * width) * 3 + 2] = res.z;
-			//}
+			////if (x*z != 0 || x == width-1 || x == width-1) {	//om noden inte är på "kanten"
+			//normalArray[(x + z * width) * 3 + 0] = res.x;
+			//normalArray[(x + z * width) * 3 + 1] = res.y;
+			//normalArray[(x + z * width) * 3 + 2] = res.z;
+			////}
+				vec3 a, b, c, n;
+			 
+			if(x>1 && z>1 && z<width-1 && x<width-1){
+			 
+			// obs krav x>= 1    // setVector !!!!! 
+			a = SetVector(vertexArray[((x - 1) + (z - 1) * width) * 3 + 0], vertexArray[((x - 1) + (z - 1) * width) * 3 + 1], vertexArray[((x - 1) + (z - 1) * width) * 3 + 2]);
+			b = SetVector(vertexArray[((x + 1) + (z)* width) * 3 + 0], vertexArray[((x + 1) + (z)* width) * 3 + 1], vertexArray[((x + 1) + (z)* width) * 3 + 2]);
+			c = SetVector(vertexArray[((x - 1) + (z + 1) * width) * 3 + 0], vertexArray[((x - 1) + (z + 1) * width) * 3 + 1], vertexArray[((x - 1) + (z + 1) * width) * 3 + 2]);
+		
+			
+		// 3 hörnpunkter, hämta från varray 
+			
+			n = CalcNormalVector(a, b, c);
+			normalArray[(x + z * width)*3 + 0] = n.x;
+			normalArray[(x + z * width)*3 + 1] = n.y;
+			normalArray[(x + z * width)*3 + 2] = n.z;
+			
+			}
+		/*	else if (x == 0) {
+				a = SetVector(vertexArray[((x - 1) + (z - 1) * width) * 3 + 0], vertexArray[((x - 1) + (z - 1) * width) * 3 + 1], vertexArray[((x - 1) + (z - 1) * width) * 3 + 2]);
+				b = SetVector(vertexArray[((x + 1) + (z)* width) * 3 + 0], vertexArray[((x + 1) + (z)* width) * 3 + 1], vertexArray[((x + 1) + (z)* width) * 3 + 2]);
+				c = SetVector(vertexArray[((x - 1) + (z + 1) * width) * 3 + 0], vertexArray[((x - 1) + (z + 1) * width) * 3 + 1], vertexArray[((x - 1) + (z + 1) * width) * 3 + 2]);
+
+			}*/
+
+			else{
+			normalArray[(x + z * width)*3 + 0] = 0.0;
+			normalArray[(x + z * width)*3 + 1] = 1.0;
+			normalArray[(x + z * width)*3 + 2] = 0.0;
+			}
 
 
 			// Texture coordinates. You may want to scale them.

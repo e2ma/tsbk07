@@ -11,6 +11,7 @@ uniform float t;	//psychic teapot
 uniform float texflag;
 uniform mat4 lookAt;
 
+
 //textures
 in vec2 outTexCoord;
 //uniform sampler2D texUnit;
@@ -40,6 +41,7 @@ void main(void)
 
 		if(!isDirectional[i]){
 			temp =  exSurface - vec3(lookAt*vec4(lightSourcesDirPosArr[i],1.0));  //göra om till view koordinater   vec4, vill behålla translationen!
+		//	temp =  exSurface - vec3(0,100,-100); 
 		}else{
 			temp =  mat3(lookAt)*lightSourcesDirPosArr[i];		//vill inte behålla translationen
 		}
@@ -49,6 +51,7 @@ void main(void)
 
 		// diffuse
 		diffuse = dot(normalize(exNormal), vec3(normalize(-light)));
+		//diffuse = dot(vec3(0,1,0), vec3(normalize(-light)));
 		diffuse = max(0.0, diffuse); // no negative light
 
 		// specular
@@ -62,7 +65,7 @@ void main(void)
 		specular = max(specular, 0.0);
 	
 		//diffuse = 0;
-		//specular = 0;
+		//specular = 0; // fungerar ej vid directional ?? 
 		shade_temp = 1.7*diffuse + 1.0*specular;
 	
 	

@@ -25,8 +25,10 @@ void main(void)
 	height = 1;
 
 	//Räkna fram normaler!?
-	mat3 normalMatrix = mat3(lookAt*mdlMatrix); //normaler till View coordinates
-	exNormal = normalMatrix * inNormal;
+	//mat3 normalMatrix = mat3(lookAt*mdlMatrix); //normaler till View coordinates
+	//exNormal = normalMatrix * inNormal;
+
+	exNormal = inverse(transpose(mat3(lookAt*mdlMatrix))) * inNormal;
 	//Räkna fram normaler!?
 
 
