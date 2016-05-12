@@ -93,6 +93,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="drawworld.c" />
     <ClCompile Include="GL_utilities.c" />
     <ClCompile Include="lab4 del1.c" />
   </ItemGroup>

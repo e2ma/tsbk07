@@ -1,6 +1,8 @@
 #version 150
 
 in vec3 inPosition;
+out vec3 exPosition;
+out vec3 exPosition_world;
 in vec3 inNormal;
 out vec3 exNormal;
 out vec3 exSurface; // Phong (specular)
@@ -17,6 +19,8 @@ out vec2 outTexCoord;
 
 void main(void)
 {
+	exPosition = inPosition;
+	exPosition_world =  vec3(mdlMatrix * vec4(inPosition, 1.0));
 	outTexCoord = inTexCoord;
 	height = 1;
 

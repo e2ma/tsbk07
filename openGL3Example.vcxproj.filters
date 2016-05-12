@@ -21,6 +21,9 @@
     <ClCompile Include="lab4 del1.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="drawworld.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL_utilities.h">

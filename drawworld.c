@@ -125,14 +125,14 @@ float randval(float min, float max)
 }
 
 
-GLfloat* DiamondSquare(int height, int width, int bpp) {
+GLfloat* DiamondSquare(int width, int bpp) {
 
+	int height = width;
 	int vertexCount = width * height;
 	printf("vertices: %d\nwidth: %d\n", vertexCount, width);// (256*256) -> changed to 257*257. imageData not valid anymore
 	int triangleCount = (width - 1) * (height - 1) * 2;
 	int x, z;
 
-	//	GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
 	GLfloat *heightArray = malloc(sizeof(GLfloat) * vertexCount);
 
 	for (x = 0; x < width; x++) {
@@ -169,15 +169,9 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 	int total_size = height; // terrain size (length of one side)
 	GLfloat/* a, b, c, d, e, f, g,*/ fval, gval, rand;// (x, y = [0 - 256]: 257 vertices)
 	int a, b, c, d, e, f, g, hmax, imax;
-	rand = 100.0;
+	rand = 50.0;
 	int num = 0; // nb of iterations
 	int pos = 0;
-
-	// height of corners
-	heightArray[(0 + 0 * total_size)] = 0; // A
-	heightArray[(256 + 0 * total_size)] = 0; // B
-	heightArray[(0 + 256 * total_size)] = 0; // C
-	heightArray[(256 + 256 * total_size)] = 0; // D
 
 	while (size > 0) {
 		int x, z;
@@ -243,7 +237,7 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 					gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
 
 					// edges = 0
-					//gval = 0;
+					//	gval = 0;
 
 					imax = (x*(size - 1) + (size - 1) / 2 + (total_size - 1) * total_size);
 					heightArray[imax] = gval;
@@ -251,7 +245,7 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 
 				heightArray[f] = fval;
 				heightArray[g] = gval;
-				//heightArray[(0 * (size - 1) + ((z * (size - 1) + (size - 1) / 2) * total_size))] = 0; // set f=0 again. why otherwize not 0??  // edges = 0
+				//	heightArray[(0 * (size - 1) + ((z * (size - 1) + (size - 1) / 2) * total_size))] = 0; // set f=0 again. why otherwize not 0??  // edges = 0
 
 
 
@@ -285,7 +279,6 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 	return heightArray;
 
 }
-
 
 
 
@@ -389,7 +382,8 @@ Model *m, *m2, *tm, *m_sphere, *m_bunny, *m_skybox, *water_terrain;
 // Reference to shader program
 GLuint program, skyboxshader;
 GLuint tex1, tex2, sky_tex, water_tex;
-TextureData ttex; // terrain
+int terrain_width = 257;
+
 
 
 // vertex array object
@@ -490,24 +484,31 @@ void init(void)
 	//vertex buffer objects, used for uploading vertices 
 
 	dumpInfo();
-
 	//m_sphere = LoadModelPlus("groundsphere.obj");
 	//m_bunny = LoadModelPlus("bunnyplus.obj");
 	m_skybox = LoadModelPlus("skybox.obj");
 
 	glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-	glUniform1i(glGetUniformLocation(program, "tex"), 0); // Texture unit 0
-	LoadTGATextureSimple("grass2.tga", &tex1);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, tex2);		// Bind Our Texture tex2
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, water_tex); // Bind water_tex
+
+	glUniform1i(glGetUniformLocation(program, "tex1"), 0); // Texture unit 0
+	glUniform1i(glGetUniformLocation(program, "tex2"), 1); // Texture unit 1
+	glUniform1i(glGetUniformLocation(program, "water_tex"), 2); // Texture unit 2
+	LoadTGATextureSimple("grass.tga", &tex1);
+	LoadTGATextureSimple("dirt.tga", &tex2);
 	LoadTGATextureSimple("skybox512.tga", &sky_tex);
-
-	// Load terrain data
-
-	LoadTGATextureData("fft-terrain257.tga", &ttex);
-	tm = GenerateTerrain(257,32,true);
-
 	LoadTGATextureSimple("water.tga", &water_tex);
-	water_terrain = GenerateTerrain(257,32,false);
 
+
+	// Initialize terrain data
+	tm = GenerateTerrain(terrain_width, 32, true);
+	water_terrain = GenerateTerrain(terrain_width, 32, false);
 
 	//printError("init terrain");
 
@@ -587,7 +588,7 @@ void display(void)
 
 
 		p = VectorAdd(p, VectorAdd(ScalarMult(forw, a / 100), ScalarMult(p_ad, b / 100)));
-		p = SetVector(p.x, calcHeight(p.x, p.z, tm, ttex.width) + 2, p.z);
+		p = SetVector(p.x, calcHeight(p.x, p.z, tm, terrain_width) + 2, p.z);
 		l = VectorAdd(p, p_ws);
 
 	}
@@ -641,19 +642,28 @@ void display(void)
 
 	printVec3(p);
 
-	//utökad terräng
-	float extx = p.x / ttex.width;
-	float extz = p.z / ttex.width;
+
+	glEnable(GL_BLEND);
+	//glBlendFunc(GL_ONE, GL_ONE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, tex2);		// Bind Our Texture tex2
+
+
+	float extx = p.x / terrain_width;
+	float extz = p.z / terrain_width;
 
 	int tempx = (extx > 0 ? (int)extx : -1 * ceil(fabs(extx)));
 	int tempz = (extz > 0 ? (int)extz : -1 * ceil(fabs(extz)));
-	
-	//Draw 8 triangles around camera, 9 in total
+
+	//Draw 8 terrain patches around camera, 9 in total
 	for (auto xled = (tempx - 1); xled <= (tempx + 1); xled++) {
 		for (auto zled = (tempz - 1); zled <= (tempz + 1); zled++) {
-
-			int tx = xled * (ttex.width - 1);
-			int tz = zled * (ttex.width - 1);
+			//if (init_xled != xled) { tm = GenerateTerrain(257, 32, true); }
+			int tx = xled * (terrain_width - 1);
+			int tz = zled * (terrain_width - 1);
 
 			trans = T(tx, 0, tz);
 			rot = Rx(0);
@@ -663,21 +673,29 @@ void display(void)
 			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+			//glUniform1iv(glGetUniformLocation(program, "camPos"), 3, &p.x);
 
-			glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
-			texflag = 1;
+
+
+
+			//	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
+			texflag = 2;
 			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 			DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
-			
-			
-			glBindTexture(GL_TEXTURE_2D, water_tex);		// Bind Our Texture tex1
+
+
+			//glBindTexture(GL_TEXTURE_2D, water_tex);		// Bind Our Texture tex1
+
+			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, Mult(T(0,-10,0),total).m);
 			texflag = 1;
 			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 			DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 
-		}
-	}	
+			//	DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 
+		}
+	}
+	glDisable(GL_BLEND);
 	////boll
 	//trans = t( fabs(80.0*sin(t/30.0)) , calcheight( fabs(80.0*sin(t/30.0)) , fabs(80.0*cos(t/30.0)) , tm , ttex.width), fabs(80.0*cos(t/30.0)));
 	////trans = t(100, 10, 100);
