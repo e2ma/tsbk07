@@ -56,63 +56,82 @@ Point3D lightSourcesDirectionsPositions[] = { { 10.0f, 5.0f, 0.0f }, // Red ligh
 mat4 projectionMatrix;
 
 float calcHeight(float x, float z, Model *tex, int tex_width) {
-	int tempx = 0, tempz = 0, impx, impz;
+	int tempx = 0, tempz = 0;
+
+	//For negative numbers
+	if (x < 0) {
+		float temp = (x / (tex_width - 1));
+		float adwwad = fmod(temp, 1);
+		x = (tex_width - 1) + fmod(temp,1)*(tex_width - 1);
+	}
+	if (z < 0) {
+		float temp = (z / (tex_width - 1));
+		z = (tex_width - 1) + fmod(temp, 1)*(tex_width - 1);
+	}
+
+
+
 	tempx = floor(x);
 	tempz = floor(z);
 
-	if(false){
+	if (floorf(x) == x && floorf(z) == z){
+		return tex->vertexArray[(tempx + tempz * tex_width) * 3 + 1];	//if camera is on an integer position
+	}
 
-	}else if (fabs(x) >= tex_width - 1 || fabs(z) >= tex_width - 1) {
-		return 0;
-	}else if (floorf(x) == x && floorf(z) == z){
-		return tex->vertexArray[(tempx + tempz * tex_width) * 3 + 1];
-	}else{
-		vec3 p1, p2, p3;
-		float d = 0.0;
-		vec3 nvec;
+	//Modulusoperation för att translatera positioner utanför första patchen
+	tempx = (tempx % (tex_width - 1)) - (tempx % 1);
+	tempz = (tempz % (tex_width - 1)) - (tempz % 1);
+	
+	vec3 p1, p2, p3;
+	float d = 0.0;
+	vec3 nvec;
 
-		p1 = SetVector(tex->vertexArray[((tempx + 0) + (tempz + 1) * tex_width) * 3 + 0], 
-					   tex->vertexArray[((tempx + 0) + (tempz + 1) * tex_width) * 3 + 1], 
-					   tex->vertexArray[((tempx + 0) + (tempz + 1) * tex_width) * 3 + 2]);
+	//Kan krasha för att 257 vs 256 inte fungerar som det ska?
 
-		p3 = SetVector(tex->vertexArray[((tempx + 1) + (tempz + 0) * tex_width) * 3 + 0],
-					   tex->vertexArray[((tempx + 1) + (tempz + 0) * tex_width) * 3 + 1],
-					   tex->vertexArray[((tempx + 1) + (tempz + 0) * tex_width) * 3 + 2]);
+	p1 = SetVector(tex->vertexArray[((tempx + 0) + (tempz + 1) * tex_width) * 3 + 0],
+		tex->vertexArray[((tempx + 0) + (tempz + 1) * tex_width) * 3 + 1],
+		tex->vertexArray[((tempx + 0) + (tempz + 1) * tex_width) * 3 + 2]);
 
-		if ( (x - tempx) + (z - tempz) > 1) {
+	p3 = SetVector(tex->vertexArray[((tempx + 1) + (tempz + 0) * tex_width) * 3 + 0],
+		tex->vertexArray[((tempx + 1) + (tempz + 0) * tex_width) * 3 + 1],
+		tex->vertexArray[((tempx + 1) + (tempz + 0) * tex_width) * 3 + 2]);
 
-			p2 = SetVector(tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 0],
-						   tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 1],
-						   tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 2]);
+	float asd = ((tempx + fmod(x, 1)) - tempx);
+	float qeqwe = ((tempz + fmod(z, 1)) - tempz);
 
-			//res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1));
+	if (((tempx + fmod(x, 1)) - tempx) + ((tempz + fmod(z,1)) - tempz) > 1) {
 
-			nvec = CalcNormalVector(p2, p1, p3);
+		p2 = SetVector(tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 0],
+			tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 1],
+			tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 2]);
 
-			d = nvec.x * tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 0] +
-				nvec.y * tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 1] +
-				nvec.z * tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 2];
+		//res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1));
 
-			return ((d - nvec.x * x - nvec.z * z) / nvec.y);
-			
-		}else{ 
+		nvec = CalcNormalVector(p2, p1, p3);
 
-			p2 = SetVector(tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 0],
-				           tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 1],
-				           tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 2]);
+		d = nvec.x * tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 0] +
+			nvec.y * tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 1] +
+			nvec.z * tex->vertexArray[((tempx + 1) + (tempz + 1) * tex_width) * 3 + 2];
 
-			nvec = CalcNormalVector(p2, p1, p3); 
-
-			d = nvec.x * tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 0] +
-				nvec.y * tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 1] +
-				nvec.z * tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 2];
-
-			return ((d - nvec.x * x - nvec.z * z) / nvec.y);
-		}
-		
-		
+		return ((d - nvec.x * (tempx + fmod(x, 1)) - nvec.z * (tempz + fmod(z, 1))) / nvec.y);
 
 	}
+	else {
+
+		p2 = SetVector(tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 0],
+			tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 1],
+			tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 2]);
+
+		nvec = CalcNormalVector(p2, p1, p3);
+
+		d = nvec.x * tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 0] +
+			nvec.y * tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 1] +
+			nvec.z * tex->vertexArray[((tempx + 0) + (tempz + 0) * tex_width) * 3 + 2];
+
+		return ((d - nvec.x * (tempx + fmod(x, 1)) - nvec.z * (tempz + fmod(z, 1))) / nvec.y);
+	}
+
+
 
 }
 
@@ -169,7 +188,7 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 	int total_size = height; // terrain size (length of one side)
 	GLfloat/* a, b, c, d, e, f, g,*/ fval, gval, rand;// (x, y = [0 - 256]: 257 vertices)
 	int a, b, c, d, e, f, g, hmax, imax;
-	rand = 100.0;
+	rand = 60.0;
 	int num = 0; // nb of iterations
 	int pos = 0;
 
@@ -368,15 +387,12 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 		triangleCount * 3);
 
 	return model;
-}
-
-
-	
+}	
 
 mat4 rot, trans, total;
 GLfloat a, b, px, py, mx, my, siderotation, uprotation = 0.0;
 int camstyle = 0;
-vec3 p = { 0,10,20 };
+vec3 p = { 40,40,40 };
 vec3 l = { 0,1,0 };
 vec3 v = { 0.0f, 1.0f, 0.0f }; //uppvektor 
 vec3 p_ws;
@@ -607,7 +623,7 @@ void display(void)
 	lA.m[3] = 0.0;
 	lA.m[7] = 0.0;
 	lA.m[11] = 0.0;
-	glUniformMatrix4fv(glGetUniformLocation(skyboxshader, "lookAt"), 1, GL_TRUE, lA.m); //är det fel här?
+	glUniformMatrix4fv(glGetUniformLocation(skyboxshader, "lookAt"), 1, GL_TRUE, lA.m);
 
 
 	texflag = 3;
@@ -664,12 +680,13 @@ void display(void)
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
+			//grass
 			glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
 			texflag = 1;
 			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 			DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
-			
-			
+
+			//water
 			glBindTexture(GL_TEXTURE_2D, water_tex);		// Bind Our Texture tex1
 			texflag = 1;
 			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
