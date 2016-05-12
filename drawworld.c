@@ -31,9 +31,14 @@
 
 //specular shading START
 
-Point3D lightSourcesColorsArr[] = { { 1.0f, 0.0f, 0.0f }, // Red light
-{ 0.0f, 1.0f, 0.0f }, // Green light
-{ 0.0f, 0.0f, 1.0f }, // Blue light
+//Point3D lightSourcesColorsArr[] = { { 1.0f, 0.0f, 0.0f }, // Red light
+//{ 0.0f, 1.0f, 0.0f }, // Green light
+//{ 0.0f, 0.0f, 1.0f }, // Blue light
+//{ 1.0f, 1.0f, 1.0f } }; // White light
+
+Point3D lightSourcesColorsArr[] = { { 1.0f, 1.0f, 1.0f }, // Red light
+{ 1.0f, 1.0f, 1.0f }, // Green light
+{ 1.0f, 1.0f, 1.0f }, // Blue light
 { 1.0f, 1.0f, 1.0f } }; // White light
 
 GLfloat specularExponent[] = { 10.0, 20.0, 60.0, 5.0 };
@@ -41,8 +46,8 @@ GLint isDirectional[] = { 0,0,1,1 };
 
 Point3D lightSourcesDirectionsPositions[] = { { 10.0f, 5.0f, 0.0f }, // Red light, positional
 { 0.0f, 5.0f, 10.0f }, // Green light, positional
-{ -1.0f, 0.0f, 0.0f }, // Blue light along X
-{ 0.0f, 0.0f, -1.0f } }; // White light along Z
+{ 0.0f, -1.0f, -1.0f }, // Blue light along X
+{ -1.0f, 0.0f, -1.0f } }; // White light along Z
 
 //specular shading END
 
@@ -144,14 +149,14 @@ float randval(float min, float max)
 }
 
 
-GLfloat* DiamondSquare(int height, int width, int bpp) {
+GLfloat* DiamondSquare(int width, int bpp) {
 
+	int height = width;
 	int vertexCount = width * height;
 	printf("vertices: %d\nwidth: %d\n", vertexCount, width);// (256*256) -> changed to 257*257. imageData not valid anymore
 	int triangleCount = (width - 1) * (height - 1) * 2;
 	int x, z;
 
-	//	GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
 	GLfloat *heightArray = malloc(sizeof(GLfloat) * vertexCount);
 
 	for (x = 0; x < width; x++) {
@@ -191,12 +196,6 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 	rand = 60.0;
 	int num = 0; // nb of iterations
 	int pos = 0;
-
-	// height of corners
-	heightArray[(0 + 0 * total_size)] = 0; // A
-	heightArray[(256 + 0 * total_size)] = 0; // B
-	heightArray[(0 + 256 * total_size)] = 0; // C
-	heightArray[(256 + 256 * total_size)] = 0; // D
 
 	while (size > 0) {
 		int x, z;
@@ -262,7 +261,7 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 					gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
 
 					// edges = 0
-					//gval = 0;
+					//	gval = 0;
 
 					imax = (x*(size - 1) + (size - 1) / 2 + (total_size - 1) * total_size);
 					heightArray[imax] = gval;
@@ -270,7 +269,7 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 
 				heightArray[f] = fval;
 				heightArray[g] = gval;
-				//heightArray[(0 * (size - 1) + ((z * (size - 1) + (size - 1) / 2) * total_size))] = 0; // set f=0 again. why otherwize not 0??  // edges = 0
+				//	heightArray[(0 * (size - 1) + ((z * (size - 1) + (size - 1) / 2) * total_size))] = 0; // set f=0 again. why otherwize not 0??  // edges = 0
 
 
 
@@ -307,7 +306,6 @@ GLfloat* DiamondSquare(int height, int width, int bpp) {
 
 
 
-
 Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 {
 
@@ -341,18 +339,48 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 
 
 			// Normal vectors. You need to calculate these.
-			temp1 = SetVector(x / 1.0, vertexArray[(x + z * width) * 3 + 0], (z + 1) / 1.0); //upp
-			temp2 = SetVector((x + 1) / 1.0, vertexArray[(x + z * width) * 3 + 1], z / 1.0); //sidan
-			temp3 = SetVector((x - 1) / 1.0, vertexArray[(x + z * width) * 3 + 2], (z - 1) / 1.0); //ner + bakom
+			//temp1 = SetVector(x / 1.0, vertexArray[(x + z * width) * 3 + 0], (z + 1) / 1.0); //upp
+			//temp2 = SetVector((x + 1) / 1.0, vertexArray[(x + z * width) * 3 + 1], z / 1.0); //sidan
+			//temp3 = SetVector((x - 1) / 1.0, vertexArray[(x + z * width) * 3 + 2], (z - 1) / 1.0); //ner + bakom
 
-			//res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
-			res = CalcNormalVector(temp3, temp2, temp1);
+			////res = CrossProduct(VectorSub(temp3, temp2), VectorSub(temp3, temp1)); //ner + bakom
+			//res = CalcNormalVector(temp3, temp2, temp1);
 
-			//if (x*z != 0 || x == width-1 || x == width-1) {	//om noden inte är på "kanten"
-			normalArray[(x + z * width) * 3 + 0] = res.x;
-			normalArray[(x + z * width) * 3 + 1] = res.y;
-			normalArray[(x + z * width) * 3 + 2] = res.z;
-			//}
+			////if (x*z != 0 || x == width-1 || x == width-1) {	//om noden inte är på "kanten"
+			//normalArray[(x + z * width) * 3 + 0] = res.x;
+			//normalArray[(x + z * width) * 3 + 1] = res.y;
+			//normalArray[(x + z * width) * 3 + 2] = res.z;
+			////}
+				vec3 a, b, c, n;
+			 
+			if(x>1 && z>1 && z<width-1 && x<width-1){
+			 
+			// obs krav x>= 1    // setVector !!!!! 
+			a = SetVector(vertexArray[((x - 1) + (z - 1) * width) * 3 + 0], vertexArray[((x - 1) + (z - 1) * width) * 3 + 1], vertexArray[((x - 1) + (z - 1) * width) * 3 + 2]);
+			b = SetVector(vertexArray[((x + 1) + (z)* width) * 3 + 0], vertexArray[((x + 1) + (z)* width) * 3 + 1], vertexArray[((x + 1) + (z)* width) * 3 + 2]);
+			c = SetVector(vertexArray[((x - 1) + (z + 1) * width) * 3 + 0], vertexArray[((x - 1) + (z + 1) * width) * 3 + 1], vertexArray[((x - 1) + (z + 1) * width) * 3 + 2]);
+		
+			
+		// 3 hörnpunkter, hämta från varray 
+			
+			n = CalcNormalVector(a, b, c);
+			normalArray[(x + z * width)*3 + 0] = n.x;
+			normalArray[(x + z * width)*3 + 1] = n.y;
+			normalArray[(x + z * width)*3 + 2] = n.z;
+			
+			}
+		/*	else if (x == 0) {
+				a = SetVector(vertexArray[((x - 1) + (z - 1) * width) * 3 + 0], vertexArray[((x - 1) + (z - 1) * width) * 3 + 1], vertexArray[((x - 1) + (z - 1) * width) * 3 + 2]);
+				b = SetVector(vertexArray[((x + 1) + (z)* width) * 3 + 0], vertexArray[((x + 1) + (z)* width) * 3 + 1], vertexArray[((x + 1) + (z)* width) * 3 + 2]);
+				c = SetVector(vertexArray[((x - 1) + (z + 1) * width) * 3 + 0], vertexArray[((x - 1) + (z + 1) * width) * 3 + 1], vertexArray[((x - 1) + (z + 1) * width) * 3 + 2]);
+
+			}*/
+
+			else{
+			normalArray[(x + z * width)*3 + 0] = 0.0;
+			normalArray[(x + z * width)*3 + 1] = 1.0;
+			normalArray[(x + z * width)*3 + 2] = 0.0;
+			}
 
 
 			// Texture coordinates. You may want to scale them.
@@ -405,7 +433,8 @@ Model *m, *m2, *tm, *m_sphere, *m_bunny, *m_skybox, *water_terrain;
 // Reference to shader program
 GLuint program, skyboxshader;
 GLuint tex1, tex2, sky_tex, water_tex;
-TextureData ttex; // terrain
+int terrain_width = 257;
+
 
 
 // vertex array object
@@ -506,24 +535,31 @@ void init(void)
 	//vertex buffer objects, used for uploading vertices 
 
 	dumpInfo();
-
 	//m_sphere = LoadModelPlus("groundsphere.obj");
 	//m_bunny = LoadModelPlus("bunnyplus.obj");
 	m_skybox = LoadModelPlus("skybox.obj");
 
 	glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-	glUniform1i(glGetUniformLocation(program, "tex"), 0); // Texture unit 0
-	LoadTGATextureSimple("grass2.tga", &tex1);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, tex2);		// Bind Our Texture tex2
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, water_tex); // Bind water_tex
+
+	glUniform1i(glGetUniformLocation(program, "tex1"), 0); // Texture unit 0
+	glUniform1i(glGetUniformLocation(program, "tex2"), 1); // Texture unit 1
+	glUniform1i(glGetUniformLocation(program, "water_tex"), 2); // Texture unit 2
+	LoadTGATextureSimple("grass.tga", &tex1);
+	LoadTGATextureSimple("dirt.tga", &tex2);
 	LoadTGATextureSimple("skybox512.tga", &sky_tex);
-
-	// Load terrain data
-
-	LoadTGATextureData("fft-terrain257.tga", &ttex);
-	tm = GenerateTerrain(257,32,true);
-
 	LoadTGATextureSimple("water.tga", &water_tex);
-	water_terrain = GenerateTerrain(257,32,false);
 
+
+	// Initialize terrain data
+	tm = GenerateTerrain(terrain_width, 32, true);
+	water_terrain = GenerateTerrain(terrain_width, 32, false);
 
 	//printError("init terrain");
 
@@ -603,7 +639,7 @@ void display(void)
 
 
 		p = VectorAdd(p, VectorAdd(ScalarMult(forw, a / 100), ScalarMult(p_ad, b / 100)));
-		p = SetVector(p.x, calcHeight(p.x, p.z, tm, ttex.width) + 2, p.z);
+		p = SetVector(p.x, calcHeight(p.x, p.z, tm, terrain_width) + 20, p.z);
 		l = VectorAdd(p, p_ws);
 
 	}
@@ -657,19 +693,28 @@ void display(void)
 
 	printVec3(p);
 
-	//utökad terräng
-	float extx = p.x / ttex.width;
-	float extz = p.z / ttex.width;
+
+	glEnable(GL_BLEND);
+	//glBlendFunc(GL_ONE, GL_ONE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, tex2);		// Bind Our Texture tex2
+
+
+	float extx = p.x / terrain_width;
+	float extz = p.z / terrain_width;
 
 	int tempx = (extx > 0 ? (int)extx : -1 * ceil(fabs(extx)));
 	int tempz = (extz > 0 ? (int)extz : -1 * ceil(fabs(extz)));
-	
-	//Draw 8 triangles around camera, 9 in total
+
+	//Draw 8 terrain patches around camera, 9 in total
 	for (auto xled = (tempx - 1); xled <= (tempx + 1); xled++) {
 		for (auto zled = (tempz - 1); zled <= (tempz + 1); zled++) {
-
-			int tx = xled * (ttex.width - 1);
-			int tz = zled * (ttex.width - 1);
+			//if (init_xled != xled) { tm = GenerateTerrain(257, 32, true); }
+			int tx = xled * (terrain_width - 1);
+			int tz = zled * (terrain_width - 1);
 
 			trans = T(tx, 0, tz);
 			rot = Rx(0);
@@ -679,22 +724,28 @@ void display(void)
 			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+			//glUniform1iv(glGetUniformLocation(program, "camPos"), 3, &p.x);
 
-			//grass
-			glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
-			texflag = 1;
+
+			//	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
+			texflag = 2;
 			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 			DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
 
-			//water
-			glBindTexture(GL_TEXTURE_2D, water_tex);		// Bind Our Texture tex1
+
+			//glBindTexture(GL_TEXTURE_2D, water_tex);		// Bind Our Texture tex1
+
+			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, Mult(T(0,-1,0),total).m);
+
 			texflag = 1;
 			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 			DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 
-		}
-	}	
+			//	DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 
+		}
+	}
+	glDisable(GL_BLEND);
 	////boll
 	//trans = t( fabs(80.0*sin(t/30.0)) , calcheight( fabs(80.0*sin(t/30.0)) , fabs(80.0*cos(t/30.0)) , tm , ttex.width), fabs(80.0*cos(t/30.0)));
 	////trans = t(100, 10, 100);
