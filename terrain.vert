@@ -7,6 +7,8 @@ in vec3 inNormal;
 out vec3 exNormal;
 out vec3 exSurface; // Phong (specular)
 out float shade;
+uniform float t;	//psychic teapot
+uniform float texflag;
 
 out float height;
 
@@ -41,5 +43,8 @@ void main(void)
 
 	
 	gl_Position = projMatrix * lookAt * mdlMatrix * vec4(inPosition, 1.0);
+
+	
+	
 
 }
