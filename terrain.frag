@@ -15,7 +15,7 @@ uniform mat4 lookAt;
 //textures
 in vec2 outTexCoord;
 //uniform sampler2D texUnit;
-uniform sampler2D tex1, tex2, water_tex;
+uniform sampler2D tex1, dirt_tex, water_tex, plant_tex;
 
 //specular shading
 uniform vec3 lightSourcesDirPosArr[4];	//dessa ska användas, måste göras om till view
@@ -34,7 +34,7 @@ void main(void)
 
 	//multitexture
 	vec4 t1 = texture(tex1, outTexCoord);
-	vec4 t2 = texture(tex2, outTexCoord);
+	vec4 t2 = texture(dirt_tex, outTexCoord);
 	
 	for(int i=0; i < 4;i++){ //for every light source and color
 		float shade_temp;
@@ -74,7 +74,7 @@ void main(void)
 		
 	}
 
-	// set apha value to create fog 
+	// set alpha value to create fog 
 	float alpha, far, near; 
 	alpha = 1.0;
 	far = -285;
@@ -83,9 +83,10 @@ void main(void)
 	else if(exSurface.z < far) { alpha = 0.0; }
 	else{ alpha = (1.0/(near - far)) * (exSurface.z - far);}
 
-
-	if(texflag == 1){ // water
-		outcolor = texture(water_tex, outTexCoord) * vec4(color, alpha); 	
+	if(texflag == 0){
+		outcolor = vec4(color, alpha);
+	}else if(texflag == 1){ // water
+		outcolor = texture(water_tex, outTexCoord) * vec4(color, 0.7*(alpha)); 	
 	}else if(texflag == 2){ // terrain
 		
 		// multitextured terrain 
@@ -100,9 +101,9 @@ void main(void)
 		
 
 
-		outcolor = (t1 * t1_shade + t2 * t2_shade) * vec4(color, alpha);
+		outcolor = (t1 * t1_shade + t2 * t2_shade) * vec4(color*0.5, alpha);
 
+	}else if(texflag == 3){ // trees
+		outcolor = texture(plant_tex, outTexCoord)* vec4(color, alpha); 	
 	}
-
-
 }
