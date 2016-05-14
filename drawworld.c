@@ -57,7 +57,7 @@ void init(void)
 {
 	
 	// GL inits
-	glClearColor(1.0, 1.0, 1.0, 0);
+	glClearColor(0.82, 0.94, 0.98, 0);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
