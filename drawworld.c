@@ -144,23 +144,19 @@ float calcHeight(float x, float z, Model *tex, int tex_width) {
 float randval(float min, float max)
 {
 	return (float)rand() / (float)RAND_MAX * (max - min) + min;
-	//return (float)rand() / (float)RAND_MAX * (2*max - min) + min;
-	//return (float)rand() / (float)RAND_MAX * (max -0) + 0;
+
 }
 
 
-GLfloat* DiamondSquare(int width, int bpp) {
+GLfloat* DiamondSquare(int width) {
 
-	int height = width;
-	int vertexCount = width * height;
-	printf("vertices: %d\nwidth: %d\n", vertexCount, width);// (256*256) -> changed to 257*257. imageData not valid anymore
-	int triangleCount = (width - 1) * (height - 1) * 2;
+	int vertexCount = width * width;
 	int x, z;
 
 	GLfloat *heightArray = malloc(sizeof(GLfloat) * vertexCount);
 
 	for (x = 0; x < width; x++) {
-		for (z = 0; z < height; z++) {
+		for (z = 0; z < width; z++) {
 			heightArray[(x + z * width)] = 0;
 		}
 	}
@@ -171,6 +167,7 @@ GLfloat* DiamondSquare(int width, int bpp) {
 	//	is greater than zero{
 	//	Pass through the array and perform the diamond
 	//	step for each square present.
+	//  Reduce the random number range.
 	//	Pass through the array and perform the square
 	//	step for each diamond present.
 	//	Reduce the random number range.
@@ -189,9 +186,9 @@ GLfloat* DiamondSquare(int width, int bpp) {
 	//	C   .   I   .   D
 
 	int squares_per_side = 1;
-	int size = height; //square size (length of one side)
-	int total_size = height; // terrain size (length of one side)
-	GLfloat/* a, b, c, d, e, f, g,*/ fval, gval, rand;// (x, y = [0 - 256]: 257 vertices)
+	int size = width; //square size (length of one side)
+	int total_size = width; // terrain size (length of one side)
+	GLfloat fval, gval, rand;// (x, y = [0 - 256]: 257 vertices)
 	int a, b, c, d, e, f, g, hmax, imax;
 	rand = 50.0;
 	int num = 0; // nb of iterations
@@ -203,7 +200,6 @@ GLfloat* DiamondSquare(int width, int bpp) {
 		// diamond step
 		for (x = 0; x < squares_per_side; x++) {
 			for (z = 0; z < squares_per_side; z++) {
-				//		if (num < 2) {
 				a = (x * (size - 1) + z * (size - 1) * total_size);
 				b = a + (size - 1);
 				c = a + (size - 1) * total_size;
@@ -211,18 +207,15 @@ GLfloat* DiamondSquare(int width, int bpp) {
 				e = a + (size - 1) / 2 + ((size - 1) / 2) * total_size;
 
 				float randvalue = randval(-rand, rand);
-				//	if (num == 0) { randvalue = abs(randvalue); } // uncomment to make the first e-value positive 
-				heightArray[e] = (heightArray[a] + heightArray[b] + heightArray[c] + heightArray[d]) / 4 + randvalue;// randval(-rand, rand);
-
-																													 //		}
+				heightArray[e] = (heightArray[a] + heightArray[b] + heightArray[c] + heightArray[d]) / 4 + randvalue;
 			}
 		}
 
-		// square step 
 		rand = rand / sqrt(2);
+
+		// square step 
 		for (x = 0; x < squares_per_side; x++) {
 			for (z = 0; z < squares_per_side; z++) {
-				//if (num < 10) {
 
 				a = (x * (size - 1) + z * (size - 1) * total_size);
 				b = a + (size - 1);
@@ -233,19 +226,14 @@ GLfloat* DiamondSquare(int width, int bpp) {
 				f = a + ((size - 1) / 2)  * total_size;
 				g = a + (size - 1) / 2;
 
-
-
 				if (x > 0) {
 					pos = e - (size - 1);
 					fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
 				}
 				else {
-					// edges != 0
+
 					pos = (((total_size - 1) - (size - 1) / 2) + (z * (size - 1) + (size - 1) / 2) * total_size);
 					fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
-
-					// edges = 0
-					//fval = 0;
 
 					hmax = ((total_size - 1) + (z*(size - 1) + (size - 1) / 2) * total_size);
 					heightArray[hmax] = fval;
@@ -256,12 +244,8 @@ GLfloat* DiamondSquare(int width, int bpp) {
 					gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
 				}
 				else {
-					// edges != 0
 					pos = (x*(size - 1) + (size - 1) / 2 + ((total_size - 1) - (size - 1) / 2) * total_size);
 					gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
-
-					// edges = 0
-					//	gval = 0;
 
 					imax = (x*(size - 1) + (size - 1) / 2 + (total_size - 1) * total_size);
 					heightArray[imax] = gval;
@@ -269,15 +253,10 @@ GLfloat* DiamondSquare(int width, int bpp) {
 
 				heightArray[f] = fval;
 				heightArray[g] = gval;
-				//	heightArray[(0 * (size - 1) + ((z * (size - 1) + (size - 1) / 2) * total_size))] = 0; // set f=0 again. why otherwize not 0??  // edges = 0
 
-
-
-				//		}
 			}
 		}
 
-		if (size == 2) break;
 		size = (size / 2) + 1;
 		squares_per_side *= 2;
 
@@ -286,20 +265,6 @@ GLfloat* DiamondSquare(int width, int bpp) {
 
 	}
 	printf("Iterations diamondSquare: %d\n", num);
-
-	GLfloat h1, h2;
-	/*for (x = 0; x < width; x++) {
-		for (z = 0; z < height; z++) {
-			h1 = (heightArray[(total_size - 1 + z * width)] + heightArray[(0 + z * width)]) / 2;
-			h2 = (heightArray[(x + (total_size - 1) * width)] + heightArray[(x + 0 * width)]) / 2;
-
-			heightArray[(0 + z * width)] = h1;
-			heightArray[(x + 0 * width)] = h2;
-			heightArray[((total_size - 1) + z * width)] = h1;
-			heightArray[(x + (total_size - 1) * width)] = h2;
-		}
-	}*/
-
 	return heightArray;
 
 }
@@ -310,7 +275,7 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 {
 
 	int vertexCount = width * width;
-	printf("vertices: %d\n", vertexCount);// (256*256) -> should be 257*257 -> ok! changed it :) 
+	printf("vertices: %d\n", vertexCount);
 	int triangleCount = (width - 1) * (width - 1) * 2;
 	int x, z;
 
@@ -322,7 +287,7 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 
 	vec3 temp1, temp2, temp3, res;
 
-	if (diamondSquare) { heightArray = DiamondSquare(width, width, bpp); }
+	if (diamondSquare) { heightArray = DiamondSquare(width); }
 
 	printf("bpp %d\n", bpp);
 	for (x = 0; x < width; x++)
@@ -358,7 +323,6 @@ for (x = 0; x < width; x++)
 
 			}
 			else { ax = x - 1; bx = x + 1, cx = x - 1; }
-
 			
 
 			if (z == 0 || z == width - 1) {
@@ -374,22 +338,11 @@ for (x = 0; x < width; x++)
 			}
 			else { az = z - 1; bz = z, cz = z + 1; }
 
-			/*if (x == width - 1) {
-				ax = width - 3;
-				bx = width -1;
-				cx = width - 3;
-			}*/
+			a = SetVector(vertexArray[(ax + az * width) * 3 + 0], vertexArray[(ax + az * width) * 3 + 1], vertexArray[(ax + az * width) * 3 + 2]);
+			b = SetVector(vertexArray[(bx + bz * width) * 3 + 0], vertexArray[(bx + bz * width) * 3 + 1], vertexArray[(bx + bz * width) * 3 + 2]);
+			c = SetVector(vertexArray[(cx + cz * width) * 3 + 0], vertexArray[(cx + cz * width) * 3 + 1], vertexArray[(cx + cz * width) * 3 + 2]);
 
-	//	if (x != 0 && x != width - 1 && z != 0 && z != width - 1) {
-		//	if ( x != width - 1 ) {
-
-					a = SetVector(vertexArray[(ax + az * width) * 3 + 0], vertexArray[(ax + az * width) * 3 + 1], vertexArray[(ax + az * width) * 3 + 2]);
-					b = SetVector(vertexArray[(bx + bz * width) * 3 + 0], vertexArray[(bx + bz * width) * 3 + 1], vertexArray[(bx + bz * width) * 3 + 2]);
-					c = SetVector(vertexArray[(cx + cz * width) * 3 + 0], vertexArray[(cx + cz * width) * 3 + 1], vertexArray[(cx + cz * width) * 3 + 2]);
-
-				n = CalcNormalVector(a, b, c);	
-		//	}
-	//	else { n = SetVector(0, 0, 0); }
+			n = CalcNormalVector(a, b, c);	
 
 			normalArray[(x + z * width) * 3 + 0] = n.x;
 			normalArray[(x + z * width) * 3 + 1] = n.y;
@@ -428,8 +381,6 @@ for (x = 0; x < width; x++)
 
 	return model;
 }
-
-
 	
 
 mat4 rot, trans, total;
@@ -437,24 +388,17 @@ GLfloat a, b, px, py, mx, my, siderotation, uprotation = 0.0;
 int camstyle = 0;
 vec3 p = { 0,10,20 };
 vec3 l = { 0,1,0 };
-vec3 v = { 0.0f, 1.0f, 0.0f }; //uppvektor 
+vec3 v = { 0.0f, 1.0f, 0.0f }; //upvector 
 vec3 p_ws;
 vec3 p_ad;
 
-
-
 // vertex array object
 Model *m, *m2, *tm, *m_sphere, *m_bunny, *m_skybox, *water_terrain;
+
 // Reference to shader program
 GLuint program, skyboxshader;
 GLuint tex1, tex2, sky_tex, water_tex;
 int terrain_width = 257;
-
-
-
-// vertex array object
-//unsigned int vertexArrayObjID;
-unsigned int bunnyVertexArrayObjID;
 
 
 void mouse(int x, int y)
@@ -550,8 +494,6 @@ void init(void)
 	//vertex buffer objects, used for uploading vertices 
 
 	dumpInfo();
-	//m_sphere = LoadModelPlus("groundsphere.obj");
-	//m_bunny = LoadModelPlus("bunnyplus.obj");
 	m_skybox = LoadModelPlus("skybox.obj");
 
 	glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
@@ -600,7 +542,7 @@ void display(void)
 
 
 	GLfloat t = (GLfloat)glutGet(GLUT_ELAPSED_TIME) / 1000;
-	glUniform1fv(glGetUniformLocation(program, "t"), 1, &t);
+
 	GLfloat texflag = 0.0f;
 
 	//MOVEMENT START
@@ -712,7 +654,6 @@ void display(void)
 
 
 	glEnable(GL_BLEND);
-	//glBlendFunc(GL_ONE, GL_ONE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
@@ -727,47 +668,45 @@ void display(void)
 	int tempz = (extz > 0 ? (int)extz : -1 * ceil(fabs(extz)));
 
 	//Draw 8 terrain patches around camera, 9 in total
+	texflag = 2;
+	glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 	for (auto xled = (tempx - 1); xled <= (tempx + 1); xled++) {
 		for (auto zled = (tempz - 1); zled <= (tempz + 1); zled++) {
-			//if (init_xled != xled) { tm = GenerateTerrain(257, 32, true); }
+
 			int tx = xled * (terrain_width - 1);
 			int tz = zled * (terrain_width - 1);
+
+			float t1_shade, t2_shade, low, high;
+			low = 20;
+			high = 250;
+
+			if (p.x <= low) { t2_shade = 0.0; }
+			else if (p.x >= high) { t2_shade = 1.0; }
+			else { t2_shade = (1.0 / (high - low)) * (p.x - low); }
+			t1_shade = 1 - t2_shade;
 
 			trans = T(tx, 0, tz);
 			rot = Rx(0);
 			total = Mult(trans, rot);
 			total = Mult(total, S(1.0f, 1.0f, 1.0f));
+		
 
 			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 			//glUniform1iv(glGetUniformLocation(program, "camPos"), 3, &p.x);
 
-
-
-
-			//	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
-			texflag = 2;
-			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 			DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
 
-
-			//glBindTexture(GL_TEXTURE_2D, water_tex);		// Bind Our Texture tex1
-/*
-			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, Mult(T(0,sin(t),0),total).m);
-			texflag = 1;
-			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
-			DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
-
-			//	DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");*/
-
 		}
 	}
 
-	//Draw 8 terrain patches around camera, 9 in total
+	//Draw 8 water patches around camera, 9 in total
+	texflag = 1;
+	glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
 	for (auto xled = (tempx - 1); xled <= (tempx + 1); xled++) {
 		for (auto zled = (tempz - 1); zled <= (tempz + 1); zled++) {
-			//if (init_xled != xled) { tm = GenerateTerrain(257, 32, true); }
+
 			int tx = xled * (terrain_width - 1);
 			int tz = zled * (terrain_width - 1);
 
@@ -776,76 +715,20 @@ void display(void)
 			total = Mult(trans, rot);
 			total = Mult(total, S(1.0f, 1.0f, 1.0f));
 
-			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
+			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, Mult(T(0, sin(t), 0), total).m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 			//glUniform1iv(glGetUniformLocation(program, "camPos"), 3, &p.x);
 
-
-			//glBindTexture(GL_TEXTURE_2D, water_tex);		// Bind Our Texture tex1
-
-			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, Mult(T(0, sin(t), 0), total).m);
-			texflag = 1;
-			glUniform1fv(glGetUniformLocation(program, "texflag"), 1, &texflag);
+			
+			
 			DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 
-			//	DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 		}
 	}
 
-
 	glDisable(GL_BLEND);
-	////boll
-	//trans = t( fabs(80.0*sin(t/30.0)) , calcheight( fabs(80.0*sin(t/30.0)) , fabs(80.0*cos(t/30.0)) , tm , ttex.width), fabs(80.0*cos(t/30.0)));
-	////trans = t(100, 10, 100);
-	//rot = rx(0);
-	//total = mult(trans, rot);
-	//total = mult(total, s(1.0f, 1.0f, 1.0f));
-
-	//gluniformmatrix4fv(glgetuniformlocation(program, "mdlmatrix"), 1, gl_true, total.m);
-	//gluniformmatrix4fv(glgetuniformlocation(program, "lookat"), 1, gl_true, lookatv(p, l, v).m);
-	//gluniformmatrix4fv(glgetuniformlocation(program, "projmatrix"), 1, gl_true, projectionmatrix.m);
-
-	//texflag = 0;
-	//gluniform1fv(glgetuniformlocation(program, "texflag"), 1, &texflag);
-	//drawmodel(m_sphere, program, "inposition", "innormal", "intexcoord");
-
-
-	//bunny
-	//glfloat bx, bz;
-	//bx = (10 * sin(t / 5));
-	//bz = (10 * cos(t / 5));
-
-	//trans = t(100 + bx, calcheight(100 + bx, 100 + bz, tm, ttex.width), 100 + bz);
-
-	//vec3 nrml = setvector(tm->normalarray[((int)(100 + bx) + (int)(100 + bz) * ttex.width) * 3 + 0], 
-	//					  tm->normalarray[((int)(100 + bx) + (int)(100 + bz) * ttex.width) * 3 + 1],
-	//					  tm->normalarray[((int)(100 + bx) + (int)(100 + bz) * ttex.width) * 3 + 2]);
-	//
-	//slope dependent rotation
-	//antar (1,0,b) , (0, 2, c) -> theta = arctan(b/1), theta = arctan(c/2)
-	//2*pi = 360 grader -> 1 grad = pi/180
-	// theta = (pi/180) * arctan(a/x), a är komponent i planer, x är längd på komponent??
-	// x = 1??
-
-	//testa idé med normal = (1, 2, 3) -> rip?
-
-	//vec3 rot_axis = crossproduct(nrml, v);
-
-	//rot = arbrotate(rot_axis, 0);
-	//total = mult(trans, rot);
-	//total = mult(total, s(1.0f, 1.0f, 1.0f));
-
-	//gluniformmatrix4fv(glgetuniformlocation(program, "mdlmatrix"), 1, gl_true, total.m);
-	//drawmodel(m_bunny, program, "inposition", "innormal", "intexcoord");
-
-
-	/*camMatrix = lookAt(cam.x, cam.y, cam.z,
-	lookAtPoint.x, lookAtPoint.y, lookAtPoint.z,
-	0.0, 1.0, 0.0);
-	modelView = IdentityMatrix();
-	total = Mult(camMatrix, modelView);
-	total = Mult(total, S(1.0f, 1.0f, 1.0f));*/
+	
 
 
 	printError("display 2");

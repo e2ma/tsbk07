@@ -6,6 +6,6 @@ uniform sampler2D texUnit;
 
 void main(void)
 {
-	outcolor = texture(texUnit, outTexCoord);	// skybox
+	outcolor = texture(texUnit, outTexCoord);	
 
 }

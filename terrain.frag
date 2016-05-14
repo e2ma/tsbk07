@@ -3,27 +3,25 @@
 in vec3 exPosition;
 out vec4 outcolor;
 in vec3 exNormal; // phong
-in vec3 exPosition_world;
 in float height;
+in vec3 exSurface;
+
 
 //uniform vec3 camPos;
-uniform float t;	//psychic teapot
 uniform float texflag;
 uniform mat4 lookAt;
 
 
 //textures
 in vec2 outTexCoord;
-//uniform sampler2D texUnit;
 uniform sampler2D tex1, tex2, water_tex;
 
 //specular shading
-uniform vec3 lightSourcesDirPosArr[4];	//dessa ska användas, måste göras om till view
+uniform vec3 lightSourcesDirPosArr[4];	
 uniform vec3 lightSourcesColorArr[4];
 uniform float specularExponent[4];
-uniform bool isDirectional[4];			//en if-sats beroende på om det är position eller directional
+uniform bool isDirectional[4];		
 
-in vec3 exSurface;
 
 void main(void)
 {
@@ -64,12 +62,11 @@ void main(void)
 		specular = max(specular, 0.0);
 	
 		//diffuse = 0;
-		//specular = 0; // fungerar ej vid directional ?? 
+		//specular = 0; 
 		shade_temp = 1.7*diffuse + 1.0*specular;
 	
 	
 		color = color + shade_temp * lightSourcesColorArr[i];
-		//color = color + 0.4;
 		
 	}
 
@@ -96,8 +93,6 @@ void main(void)
 		else if(exPosition.y >= high) { t2_shade = 1.0; }
 		else{ t2_shade = (1.0/(high-low)) * (exPosition.y - low);}
 		t1_shade = 1 - t2_shade;
-		
-
 
 		outcolor = (t1 * t1_shade + t2 * t2_shade) * vec4(color, alpha);
 
