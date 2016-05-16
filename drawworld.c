@@ -44,8 +44,7 @@ GLuint program, skyboxshader;
 
 //Textures
 GLuint tex1, tex2, sky_tex, water_tex;
-int terrain_width = 257;
-
+int terrain_width = 257; // Needs to be a value 2^(n) + 1 where n is a positive integer
 
 void OnTimer(int value)
 {
@@ -196,6 +195,8 @@ void display(void)
 			rot = Rx(0);
 			total = Mult(trans, rot);
 			total = Mult(total, S(1.0f, 1.0f, 1.0f));
+		//	total = Mult(total, S(1.0f, sin(t), 1.0f)); // demo
+			//total = Mult(total, S(1.0f, p.x*0.001+1.0f, 1.0f)); // demo
 
 			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
