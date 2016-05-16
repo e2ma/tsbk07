@@ -5,7 +5,7 @@ out vec4 outcolor;
 in vec3 exNormal; // phong
 in float height;
 in vec3 exSurface;
-
+in vec3 exWorldPosition;
 
 //uniform vec3 camPos;
 uniform float texflag;
@@ -89,10 +89,11 @@ void main(void)
 		low = 20;
 		high = 25;
 	
-		if(exPosition.y <= low) { t2_shade = 0.0; }
-		else if(exPosition.y >= high) { t2_shade = 1.0; }
-		else{ t2_shade = (1.0/(high-low)) * (exPosition.y - low);}
+		if(exWorldPosition.y <= low) { t2_shade = 0.0; }
+		else if(exWorldPosition.y >= high) { t2_shade = 1.0; }
+		else{ t2_shade = (1.0/(high-low)) * (exWorldPosition.y - low);}
 		t1_shade = 1 - t2_shade;
+	
 
 		outcolor = (t1 * t1_shade + t2 * t2_shade) * vec4(color, alpha);
 
