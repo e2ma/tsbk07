@@ -8,6 +8,7 @@ out vec3 exSurface; // Phong (specular)
 out float shade;
 uniform float texflag;
 
+out vec3 exWorldPosition;
 out float height;
 
 uniform mat4 mdlMatrix;
@@ -22,6 +23,7 @@ void main(void)
 	exPosition = inPosition;
 	outTexCoord = inTexCoord;
 	height = 1;
+	exWorldPosition = vec3(mdlMatrix*vec4(inPosition, 1.0));
 
 	// Calculate normal vectors
 	exNormal = inverse(transpose(mat3(lookAt*mdlMatrix))) * inNormal;
