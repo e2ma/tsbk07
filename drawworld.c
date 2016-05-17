@@ -43,7 +43,7 @@ Model *m, *m2, *tm, *m_sphere, *m_bunny, *m_skybox, *water_terrain;
 GLuint program, skyboxshader;
 
 //Textures
-GLuint tex1, tex2, sky_tex, water_tex;
+GLuint tex1, tex2, tex3, sky_tex, water_tex;
 int terrain_width = 257; // Needs to be a value 2^(n) + 1 where n is a positive integer
 
 void OnTimer(int value)
@@ -85,12 +85,16 @@ void init(void)
 	glBindTexture(GL_TEXTURE_2D, tex2);		// Bind Our Texture tex2
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, water_tex); // Bind water_tex
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, tex3);		// Bind Our Texture tex3
 
 	glUniform1i(glGetUniformLocation(program, "tex1"), 0); // Texture unit 0
 	glUniform1i(glGetUniformLocation(program, "tex2"), 1); // Texture unit 1
-	glUniform1i(glGetUniformLocation(program, "water_tex"), 2); // Texture unit 2
+	glUniform1i(glGetUniformLocation(program, "tex3"), 2); // Texture unit 2
+	glUniform1i(glGetUniformLocation(program, "water_tex"), 3); // Texture unit 3
 	LoadTGATextureSimple("grass.tga", &tex1);
 	LoadTGATextureSimple("dirt.tga", &tex2);
+	LoadTGATextureSimple("sand2.tga", &tex3);
 	LoadTGATextureSimple("skybox512.tga", &sky_tex);
 	LoadTGATextureSimple("water.tga", &water_tex);
 
@@ -174,7 +178,8 @@ void display(void)
 	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, tex2);		// Bind Our Texture tex2
-
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, tex3);		// sand
 
 	float extx = p.x / terrain_width;
 	float extz = p.z / terrain_width;
@@ -195,8 +200,8 @@ void display(void)
 			rot = Rx(0);
 			total = Mult(trans, rot);
 			total = Mult(total, S(1.0f, 1.0f, 1.0f));
-		//	total = Mult(total, S(1.0f, sin(t), 1.0f)); // demo
-			//total = Mult(total, S(1.0f, p.x*0.001+1.0f, 1.0f)); // demo
+		//total = Mult(total, S(1.0f, sin(t), 1.0f)); // demo
+		//	total = Mult(total, S(1.0f, p.x*0.003+1.0f, 1.0f)); // demo
 
 			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
@@ -225,6 +230,7 @@ void display(void)
 			DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
 		}
 	}
+
 
 	glDisable(GL_BLEND);
 	
