@@ -14,7 +14,7 @@ uniform mat4 lookAt;
 
 //textures
 in vec2 outTexCoord;
-uniform sampler2D tex1, tex2, water_tex;
+uniform sampler2D tex1, tex2, tex3, water_tex;
 
 //specular shading
 uniform vec3 lightSourcesDirPosArr[4];	
@@ -33,6 +33,7 @@ void main(void)
 	//multitexture
 	vec4 t1 = texture(tex1, outTexCoord);
 	vec4 t2 = texture(tex2, outTexCoord);
+	vec4 t3 = texture(tex3, outTexCoord);
 	
 	for(int i=0; i < 4;i++){ //for every light source and color
 		float shade_temp;
@@ -85,7 +86,9 @@ void main(void)
 	}else if(texflag == 2){ // terrain
 		
 		// multitextured terrain 
-		float t1_shade, t2_shade, low, high;
+		float t1_shade, t2_shade, t3_shade, sand, nosand, low, high;
+		sand = 0;
+		nosand = 3;
 		low = 20;
 		high = 25;
 	
@@ -93,9 +96,16 @@ void main(void)
 		else if(exWorldPosition.y >= high) { t2_shade = 1.0; }
 		else{ t2_shade = (1.0/(high-low)) * (exWorldPosition.y - low);}
 		t1_shade = 1 - t2_shade;
-	
+		
+		if(exWorldPosition.y <= sand){ t3_shade = 1.0; t1_shade = 0.0;}
+		else if(exWorldPosition.y >= nosand) { t3_shade = 0.0; }
+		else{ 
+			t1_shade = (1.0/(nosand-sand)) * (exWorldPosition.y - sand);
+			t2_shade = 0.0;
+			t3_shade = 1 - t1_shade;
+		}
 
-		outcolor = (t1 * t1_shade + t2 * t2_shade) * vec4(color, alpha);
+		outcolor = (t1 * t1_shade + t2 * t2_shade + t3_shade * t3) * vec4(color, alpha);
 
 	}
 
