@@ -169,7 +169,7 @@ void display(void)
 	modelView = IdentityMatrix();
 	total = S(1.0f, 1.0f, 1.0f);
 
-	printVec3(p);
+	//printVec3(p);
 
 
 	glEnable(GL_BLEND);
@@ -200,8 +200,8 @@ void display(void)
 			rot = Rx(0);
 			total = Mult(trans, rot);
 			total = Mult(total, S(1.0f, 1.0f, 1.0f));
-		//total = Mult(total, S(1.0f, sin(t), 1.0f)); // demo
-		//	total = Mult(total, S(1.0f, p.x*0.003+1.0f, 1.0f)); // demo
+			// total = Mult(total, S(1.0f, sin(t), 1.0f)); // demo
+			//total = Mult(total, S(1.0f, p.x*0.003+1.0f, 1.0f)); // demo
 
 			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
@@ -224,7 +224,7 @@ void display(void)
 			total = Mult(trans, rot);
 			total = Mult(total, S(1.0f, 1.0f, 1.0f));
 
-			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, Mult(T(0, sin(t), 0), total).m);
+			glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, Mult(T(0, 0.5*sin(t), 0), total).m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "lookAt"), 1, GL_TRUE, lookAtv(p, l, v).m);
 			glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 			DrawModel(water_terrain, program, "inPosition", "inNormal", "inTexCoord");
@@ -241,12 +241,14 @@ void display(void)
 
 int main(int argc, char** argv)
 {
+	printf("** New terrain generated **\nW: Forward\nS: Back\nA: Left\nD: Right\nQ: Rotate left\nE: Rotate right\nI: Look up\nK: Look down\nC: Walk along terrain\nV: Fly mode\n");
+
 	//seed the rand function with a unique number
 	srand(time(NULL));
 
 	glutInitWindowSize(1000, 600);
 	glutInit(&argc, argv);
-	glutCreateWindow("Lab 4!");
+	glutCreateWindow("Terrain");
 
 	glutDisplayFunc(&display);
 	glutPassiveMotionFunc(mouse);
