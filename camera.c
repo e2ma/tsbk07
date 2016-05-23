@@ -7,15 +7,15 @@ void movement() {
 		p_ad = CrossProduct(p_ws, v);
 		p_ad.y = 0;
 
-		trans = T(p.x, p.y, p.z);		//fixa translationen typ?
-		rot = Ry((siderotation + mx) / 50);	//rotation av l med q/e!!!
+		trans = T(p.x, p.y, p.z);
+		rot = Ry((siderotation + mx) / 50);	//rotation av l med q/e!
 		total = Mult(trans, rot);
 		l = MultVec3(total, p_ws);
 		p_ws = VectorSub(l, p);
 
 
 		trans = T(p.x, p.y, p.z);
-		rot = ArbRotate(p_ad, (uprotation + my) / 25);  //Ry(siderotation / 10);				//rotation av l med i/k
+		rot = ArbRotate(p_ad, (uprotation + my) / 25);  //rotation av l med i/k
 		total = Mult(trans, rot);
 		l = MultVec3(total, p_ws);
 		v = Normalize(CrossProduct(p_ad, p_ws));
@@ -27,21 +27,21 @@ void movement() {
 
 		//printVec3(p_ws);
 	}
-	else {			//kameran går längs texturen
+	else {			//kameran gÃ¥r lÃ¤ngs texturen
 					/*
-					l måste kopplas loss från p_ws när det sker i/k rotation. I det läget ska p_ws inte förändras
-					p_ws ska ändras vid q/e rotation, samt translation, inte vid i/k
+					l mÃ¥ste kopplas loss frÃ¥n p_ws nÃ¤r det sker i/k rotation. I det lÃ¤get ska p_ws inte fÃ¶rÃ¤ndras
+					p_ws ska Ã¤ndras vid q/e rotation, samt translation, inte vid i/k
 
-					nvm ovan: ny idé: CS, frammåt vektor som alltid är RAKT fram
+					nvm ovan: ny idÃ©: Counter Strike: frammÃ¥t vektor som alltid Ã¤r RAKT fram
 					*/
 
 		p_ws = VectorSub(l, p);
 		p_ad = CrossProduct(p_ws, v);
 		p_ad.y = 0;
-		vec3 forw = ScalarMult(SetVector(-1.0*p_ad.z, 0, p_ad.x), -1.0); //cs!!!! :D
+		vec3 forw = ScalarMult(SetVector(-1.0*p_ad.z, 0, p_ad.x), -1.0); //CS!! :D
 
-		trans = T(p.x, p.y, p.z);		//fixa translationen typ?
-		rot = Ry((siderotation + mx) / 50);	//rotation av l med q/e!!!
+		trans = T(p.x, p.y, p.z);
+		rot = Ry((siderotation + mx) / 50);	//rotation av l med q/e!
 		total = Mult(trans, rot);
 		l = MultVec3(total, p_ws);
 		p_ws = VectorSub(l, p);
@@ -83,15 +83,13 @@ float calcHeight(float x, float z, Model *tex, int tex_width) {
 		return tex->vertexArray[(tempx + tempz * tex_width) * 3 + 1];	//if camera is on an integer position
 	}
 
-	//Modulusoperation för att translatera positioner utanför första patchen
+	//Modulusoperation fÃ¶r att translatera positioner utanfÃ¶r fÃ¶rsta patchen
 	tempx = (tempx % (tex_width - 1)) - (tempx % 1);
 	tempz = (tempz % (tex_width - 1)) - (tempz % 1);
 
 	vec3 p1, p2, p3;
 	float d = 0.0;
 	vec3 nvec;
-
-	//Kan krasha för att 257 vs 256 inte fungerar som det ska?
 
 	p1 = SetVector(tex->vertexArray[((tempx + 0) + (tempz + 1) * tex_width) * 3 + 0],
 		tex->vertexArray[((tempx + 0) + (tempz + 1) * tex_width) * 3 + 1],
