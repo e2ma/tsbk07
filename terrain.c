@@ -31,6 +31,7 @@ GLfloat* DiamondSquare(int width) {
 	//	Reduce the random number range.
 	//}
 
+	// Terrain patch
 	// X to the right->
 	// Z down
 	//  A   .   G   .   B
@@ -46,10 +47,10 @@ GLfloat* DiamondSquare(int width) {
 	int squares_per_side = 1;
 	int size = width; //square size (length of one side)
 	int total_size = width; // terrain size (length of one side)
-	GLfloat fval, gval, rand;// (x, y = [0 - 256]: 257 vertices)
+	GLfloat fval, gval, rand;
 	int a, b, c, d, e, f, g, hmax, imax;
 	rand = 50.0;
-	int num = 0; // nb of iterations
+	int num = 0; // number of iterations
 	int pos = 0;
 
 	while (size > 2) {
@@ -58,6 +59,8 @@ GLfloat* DiamondSquare(int width) {
 		// diamond step
 		for (x = 0; x < squares_per_side; x++) {
 			for (z = 0; z < squares_per_side; z++) {
+
+				// calculate positions A,B,C,D,E
 				a = (x * (size - 1) + z * (size - 1) * total_size);
 				b = a + (size - 1);
 				c = a + (size - 1) * total_size;
@@ -65,16 +68,20 @@ GLfloat* DiamondSquare(int width) {
 				e = a + (size - 1) / 2 + ((size - 1) / 2) * total_size;
 
 				float randvalue = randval(-rand, rand);
+
+				// calculate height for E
 				heightArray[e] = (heightArray[a] + heightArray[b] + heightArray[c] + heightArray[d]) / 4 + randvalue;
 			}
 		}
 
+		// reduce the random number range 
 		rand = rand / sqrt(2);
 
 		// square step 
 		for (x = 0; x < squares_per_side; x++) {
 			for (z = 0; z < squares_per_side; z++) {
 
+				// calculate positions A,B,C,D,E,F,G
 				a = (x * (size - 1) + z * (size - 1) * total_size);
 				b = a + (size - 1);
 				c = a + (size - 1) * total_size;
@@ -84,43 +91,47 @@ GLfloat* DiamondSquare(int width) {
 				f = a + ((size - 1) / 2)  * total_size;
 				g = a + (size - 1) / 2;
 
-				if (x > 0) {
+				// calculate height for F 
+				if (x > 0) { 
 					pos = e - (size - 1);
 					fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
 				}
-				else {
-
+				else { 
+					// F is on the edge of the patch
 					pos = (((total_size - 1) - (size - 1) / 2) + (z * (size - 1) + (size - 1) / 2) * total_size);
 					fval = (heightArray[a] + heightArray[e] + heightArray[c] + heightArray[pos]) / 4 + randval(-rand, rand);
 
+					// H at the edge of the patch = F at the edge of the patch
 					hmax = ((total_size - 1) + (z*(size - 1) + (size - 1) / 2) * total_size);
 					heightArray[hmax] = fval;
 				}
 
+				// calculate height for G 
 				if (z > 0) {
 					pos = e - (size - 1) * total_size;
 					gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
 				}
 				else {
+					// G is on the edge of the patch
 					pos = (x*(size - 1) + (size - 1) / 2 + ((total_size - 1) - (size - 1) / 2) * total_size);
 					gval = (heightArray[a] + heightArray[e] + heightArray[b] + heightArray[pos]) / 4 + randval(-rand, rand);
 
+					// I at the edge of the patch = G at the edge of the patch
 					imax = (x*(size - 1) + (size - 1) / 2 + (total_size - 1) * total_size);
 					heightArray[imax] = gval;
 				}
-
+				
 				heightArray[f] = fval;
 				heightArray[g] = gval;
 
 			}
 		}
+		// reduce the random number range 
+		rand = rand / sqrt(2);
 
 		size = (size / 2) + 1;
 		squares_per_side *= 2;
-
-		rand = rand / sqrt(2);
 		num++;
-
 	}
 	printf("Iterations diamondSquare: %d\n", num);
 	return heightArray;
@@ -147,11 +158,11 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 
 	if (diamondSquare) { heightArray = DiamondSquare(width); }
 
-	printf("bpp %d\n", bpp);
+	//printf("bpp %d\n", bpp);
 	for (x = 0; x < width; x++)
 		for (z = 0; z < width; z++)
 		{
-			//		// Vertex array. You need to scale this properly
+			// Vertex array
 			vertexArray[(x + z * width) * 3 + 0] = x / 1.0;
 			if (diamondSquare) {
 				vertexArray[(x + z * width) * 3 + 1] = 1 + heightArray[(x + z * width)];
@@ -163,36 +174,21 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 	for (x = 0; x < width; x++)
 		for (z = 0; z < width; z++) {
 
-			// Normal vectors. You need to calculate these.
+			// Normal vector calculation
 			vec3 a, b, c, n;
 			int ax, az, bx, bz, cx, cz;
 
 			if (x == 0 || x == width - 1) {
-				//	ax = width - 2;
-				//	bx = 1;
-				//	cx = width - 2;
 				ax = 0;
 				bx = 2;
 				cx = 0;
-				/*		ax = abs((x - 1) % (width - 1));
-				bx = abs((x + 1) % (width -1));
-				cx = abs((x - 1) % (width - 1));*/
-
-
 			}
 			else { ax = x - 1; bx = x + 1, cx = x - 1; }
 
-
 			if (z == 0 || z == width - 1) {
-				/*	az = width - 2;
-				bz = z;
-				cz = 1;*/
 				az = 0;
 				bz = 1;
 				cz = 2;
-				/*az = abs((z - 1) % (width - 1));
-				bz = abs(z % (width-1));
-				cz = abs((z + 1) % (width-1));*/
 			}
 			else { az = z - 1; bz = z, cz = z + 1; }
 
@@ -206,8 +202,7 @@ Model* GenerateTerrain(int width, int bpp, bool diamondSquare)
 			normalArray[(x + z * width) * 3 + 1] = n.y;
 			normalArray[(x + z * width) * 3 + 2] = n.z;
 
-			// Texture coordinates. You may want to scale them.
-
+			// Texture coordinates
 			texCoordArray[(x + z * width) * 2 + 0] = (float)x / (width / 60); //x
 			texCoordArray[(x + z * width) * 2 + 1] = (float)z / (width / 60); //y
 		}
